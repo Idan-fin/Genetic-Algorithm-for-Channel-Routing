@@ -1,55 +1,81 @@
-# Genetic Algorithm for Channel Routing
+# Genetic Algorithm For Channel Routing
 
- בקובץ זה יפורטו הדרישות של הפרוייקט כאשרת "דרישה" התכולה הבסיסית של הפרוייקט ו"דרישה מעבר" - שיפור לתכולה הבסיסית.
-בשלב הראשוני נרצה לממש את התכולה הבסיסית בכל שלב ובהתאם ללוח הזמנים ננסה לשפר חלק מהשלבים.
-קבלת המידע:
-	מיקומי פינים ראשוניים - נייצג בעזרת מערך דו ממדי עם 2 שורות
-	פרמטרים לריצת האלגוריתם:
-		גודל אוכלוסייה (int)
-		מספר צאצאים מקסימלי (int)
-		a - משקל אורך הרשת בחישוב הfitness 
-		b - משקל מספר הvia בפתרון
-		mut_1 - הסיכוי לבצע מוטציה מסוג 1
-		mut_2 - הסיכוי לבצע מוטציה מסוג 2
-		mut_3/4 - הסיכוי לבצע מוטציה מסוג 3/4
-		max_generation - מספר הדורות
-דרישה - נפרסר קובץ XML  המכיל 2 שורות מספרים עבור מיקומי הפינים ואת הפרמטרים.
-דרישה מעבר - GUI
+## Intro
+In this project we'll implement the genetic algorithm suggested in the following article - [genetic algorithm](genetic_algorithm_for_vlsi_routing.pdf). <br>
+Programming langauge: Python.
 
 
-שלבים במימוש האלגוריתם:
-דרישות:
-יצירת אוכלוסייה
-	מימוש פעולת הrandom routing
-	יצירת אינדיבידואל
-	יצירת אוכלוסיה
-חישוב fitness
-	חישוב קבוצות של מספרי שורות
-	חישוב אורך הרשת בכיוון המועדף
-	חישוב אורך הרשת בכיוון השני
-	חישוב מספר הVIA
-	חישוב ציון כולל בעזרת הנוסחה מהמאמר
-אסטטגיית בחירה לזיווג
-	לפי נוסחת הfitness נותנים משקל לכל פרט ובוחרים באקראי(לפי המשקל) שני פרטים לזיווג)
-שילוב צאצאים
-	לפי הפירוט במאמר(בחירת נקודה רנומלית מחיקת חיבורים שעוברים דרך האנך וחיבור מחדש בעזרת אלגוריתם random routing)
-Reduction stratey
-	חישוב fitness לצאצאים
-	בחירת p_c הכי טובים מתוך הדור החדש והדור הקודם
-חישוב p_best נוכחי
-	לפי fitness + הp_best המשוכלל האחרון
-הוספת מוטציות
-	עבור כל פרט הגרלת סדר המוטציות וביצוע שלהם בסיכוי ממושקל לפי הפרמטרים שנקלטו בקלט הבעיה
-	את המוטציות נממש לפי הכתב המאמר
-	דרישה מעבר - לנסות מוטציות נוספות ולראות איך זה משפיע
+## Project Specification
 
-אופטימיזיה
-	הפעלת מוטציות p_best
-פלט:
-מערך דו ממדי של הGenotype
-	דרישה בסיסית: ניצור קובץ XML המכיל מערך תלת ממדי המייצג את הRouting הכי טוב שהגענו אליו, יחד עם הפרטמרים המעידים על טיב הפתרון.
-	דרישה מעבר: סרטוט המעגל המתקבל.
-דרישה בסיסית:
-	הרצת האלגוריתם על קלטים שונים .
-דרישה מעבר:
-	שחזור תוצאות האלגוריתם מהמאמר - הרצת באנצ'מרקים מוכרים וסיכום התוצאות בטבלה.
+### Input
+#### Input Format
+- basic - XML file.
+- extended - GUI.
+
+#### Input Parameters
+- pins locations - 2D array.
+- P_c - population size - int.
+- max number of descendants - int.
+- number of generations - int.
+- a - net length factor - float.
+- b - number of vias factor - float.
+- mut_1 - probability to get mutation of type 1 in a single iteration - float.
+- mut_2 - probability to get mutation of type 2 in a single iteration - float.
+- mut_3 - probability to get mutation of type 3 in a single iteration - float.
+- mut_4 - probability to get mutation of type 4 in a single iteration - float.
+
+#### Extra Goals
+- get multiple input problems.
+- GUI.
+
+---
+
+### Algorithm Phases
+for detailed information please refer the [article](genetic_algorithm_for_vlsi_routing.pdf) 
+- create initial population
+  - create individual - single solution for our the input problem.
+  - implement <b>random routing</b> operation.
+- fitness calculation 
+  - calculate groups of solutions by number of rows.
+  - calculate net length (accurate direction).
+  - calculate net length (opposite direction).
+  - calculate number of vias.
+  - calculate total fitness according to the formula.
+- partner selection
+  - pick 2 solutions with fitness based probability.
+- create descendant (parents cross)
+  - random cut point, take each side from a different parent, remove connections that cross the cut and apply random routing if needed.
+- reduction
+  - calculate fitness for descendants.
+  - pick the best P_c (population size) from old + new generations.
+- calculate P_best (the best solution) and keep it
+- mutation
+  - for each solution:
+    - sort the mutations randomly.
+    - apply/skip with probability from the input file.
+    - mutation details in the article.
+  - <b>extra</b> - try to add more mutations.
+- P_best optimization
+  - final phase.
+  - apply random mutations on P_best and except only better solutions.
+
+---
+### Output
+
+#### Output Format
+- basic - XML
+- extended - GUI 
+
+#### Output Content
+- best solution
+- basic - Genotype
+  - 3D array
+- extended - Phenotype
+  - image of the best circuit
+
+#### Benchmarks and Testing
+- basic:
+  - run the algorithm on several inputs
+- extended:
+  - run the algorithm on known benchmarks and try to get similar results to the article.
+  - tables and graphs.
