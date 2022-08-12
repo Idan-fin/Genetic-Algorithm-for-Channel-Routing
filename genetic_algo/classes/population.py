@@ -8,10 +8,10 @@ class Population:
 
     def __init__(self, input_params: InputParams):
         self.input_params: InputParams = input_params
-        self.routing_solutions = self.generate_initial_population()
+        self.routing_solutions = self._generate_initial_population()
         self.best_solution = self.get_best()
 
-    def generate_initial_population(self) -> List[RoutingSolution]:
+    def _generate_initial_population(self) -> List[RoutingSolution]:
         pass
 
     def _select_parents(self) -> List[RoutingSolution]:

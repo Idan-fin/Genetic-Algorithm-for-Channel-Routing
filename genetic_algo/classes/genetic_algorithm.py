@@ -1,5 +1,6 @@
 from genetic_algo.classes.input_params import InputParams
 from genetic_algo.classes.population import Population
+from genetic_algo.classes.dataclasses import OutputType
 
 
 class GeneticAlgorithm:
@@ -7,5 +8,5 @@ class GeneticAlgorithm:
         self.input_params: InputParams = input_params
         self.population = Population(input_params=input_params)
 
-    def run(self):
+    def run(self) -> OutputType:
         pass

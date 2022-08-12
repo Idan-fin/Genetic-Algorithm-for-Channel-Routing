@@ -21,12 +21,20 @@ class RoutingSolution:
         pass
 
     def _calc_via_numbers(self) -> int:
-        pass
+
+        via_counter: int = 0
+
+        for i in range(self.genotype.grid):
+            for j in range(self.genotype.grid[i]):
+                if abs(self.genotype.grid[i][j][0]) == abs(self.genotype.grid[i][j][1]):
+                    via_counter += 1
+
+        return via_counter
 
     def calc_fitness(self) -> float:
         pass
 
-    def random_routing(self):
+    def random_routing(self, pin_a_index: int, pin_b_index: int):
         pass
 
     def mutate(self):

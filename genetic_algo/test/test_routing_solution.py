@@ -1,12 +1,14 @@
 import unittest
 
+from genetic_algo.classes.routing_solution import RoutingSolution
 
-class MyTestCase(unittest.TestCase):
+
+class RoutingSolutionTest(unittest.TestCase):
 
     def setUp(self) -> None:
         pass
 
-    def test_something(self):
+    def test_via_counter(self):
         pass
 
 
