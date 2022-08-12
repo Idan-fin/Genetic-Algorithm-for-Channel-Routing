@@ -30,5 +30,7 @@ with timer():
 		generation_limit=100
 	)
 
-sack = knapsack.from_genome(population[0], things)
-knapsack.print_stats(sack)
+
+if __name__ == '__main__':
+	sack = knapsack.from_genome(population[0], things)
+	knapsack.print_stats(sack)

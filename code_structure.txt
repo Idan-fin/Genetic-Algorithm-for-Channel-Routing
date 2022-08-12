@@ -1,0 +1,27 @@
+genetic-algo
+
+    - classes
+        - GeneticAlgorithm
+            - __init__ (input_param)
+            - run()
+
+        - input_params - (dataclass ?)
+            - parsed input
+            - _parse_input
+
+        - RoutingSolution
+            - random_routing
+            - constructor
+            - calc_fitness
+            - mutate
+            - optimize
+
+        - Population
+            - generate_initial_population
+            - get_best
+            - select_parents
+            - crossover
+            - generate_next_generation
+            - reduction
+
+    main.py
