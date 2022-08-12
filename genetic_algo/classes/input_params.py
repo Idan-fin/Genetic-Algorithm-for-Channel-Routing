@@ -15,7 +15,7 @@ class InputParams:
         self.mut_2_prob: float
         self.mut_3_prob: float
         self.mut_4_prob: float
-        self.expected_final_row_num: int
+        self.expected_final_row_num = 0
 
     def parse_input_file(self):
         pass
