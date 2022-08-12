@@ -1,5 +1,5 @@
-from input_params import InputParams
-from population import Population
+from genetic_algo.classes.input_params import InputParams
+from genetic_algo.classes.population import Population
 
 
 class GeneticAlgorithm:

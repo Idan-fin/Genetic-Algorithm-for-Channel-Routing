@@ -1,7 +1,7 @@
 from typing import List
 
-from input_params import InputParams
-from routing_solution import RoutingSolution
+from genetic_algo.classes.input_params import InputParams
+from genetic_algo.classes.routing_solution import RoutingSolution
 
 
 class Population:

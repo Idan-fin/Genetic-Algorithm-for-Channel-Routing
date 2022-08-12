@@ -1,5 +1,5 @@
-from classes.genetic_algorithm import GeneticAlgorithm
-from classes.input_params import InputParams
+from genetic_algo.classes.genetic_algorithm import GeneticAlgorithm
+from genetic_algo.classes.input_params import InputParams
 
 
 def main():

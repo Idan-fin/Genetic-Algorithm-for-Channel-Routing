@@ -1,6 +1,7 @@
-from input_params import InputParams
-from genotype import Genotype
 from random import randrange
+
+from genetic_algo.classes.input_params import InputParams
+from genetic_algo.classes.genotype import Genotype
 
 
 class RoutingSolution:
