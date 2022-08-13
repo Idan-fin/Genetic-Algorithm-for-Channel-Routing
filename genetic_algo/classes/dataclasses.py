@@ -9,6 +9,12 @@ class OutputType:
 
 
 @dataclass
+class Point2D:
+    x: int
+    y: int
+
+
+@dataclass
 class Nucleotide:
     x: int
     y: int
