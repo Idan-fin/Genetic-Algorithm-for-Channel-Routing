@@ -8,11 +8,12 @@ class Point2D:
 
 
 @dataclass
-class Nucleotide:
-    x: int
-    y: int
+class Point3D(Point2D):
     z: int
 
+
+@dataclass
+class Nucleotide(Point3D):
     value: int
 
 
