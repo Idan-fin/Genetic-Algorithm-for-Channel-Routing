@@ -1,12 +1,5 @@
 from dataclasses import dataclass
 
-from genetic_algo.classes.routing_solution import RoutingSolution
-
-
-@dataclass
-class OutputType:
-    best_solution: RoutingSolution
-
 
 @dataclass
 class Point2D:

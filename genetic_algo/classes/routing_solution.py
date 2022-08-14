@@ -5,7 +5,7 @@ from copy import deepcopy
 
 from genetic_algo.classes.input_params import InputParams
 from genetic_algo.classes.genotype import Genotype
-from genetic_algo.classes.dataclasses import Pin, Point2D
+from genetic_algo.classes.project_types import Pin, Point2D
 
 
 class RoutingSolution:
