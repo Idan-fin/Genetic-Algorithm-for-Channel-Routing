@@ -50,7 +50,7 @@ class RoutingSolution:
                            target_point: Point3D) -> bool:
         # TODO: think of better way than backtracking, maybe search in graph?
 
-        curr_node_val = grid[curr_point.z][curr_point.y][curr_point.z]
+        curr_node_val = grid[curr_point.z][curr_point.y][curr_point.x]
 
         if curr_point == target_point:
             return True
