@@ -1,6 +1,6 @@
 from genetic_algo.classes.input_params import InputParams
 from genetic_algo.classes.population import Population
-from genetic_algo.classes.dataclasses import OutputType
+from genetic_algo.classes.output_resolver import OutputType
 
 
 class GeneticAlgorithm:
