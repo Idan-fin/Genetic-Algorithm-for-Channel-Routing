@@ -43,8 +43,54 @@ class RoutingSolution:
     def random_routing(self, pin_a_index: int, pin_b_index: int):
         pass
 
-    def _is_pins_connected(self, grid: List[List[List[int]]]) -> bool:
-        return False
+    def _is_pins_connected(self,
+                           grid: List[List[List[int]]],
+                           net_number: int,
+                           curr_point: Point3D,
+                           target_point: Point3D) -> bool:
+        # TODO: think of better way than backtracking, maybe search in graph?
+
+        curr_node_val = grid[curr_point.z][curr_point.y][curr_point.z]
+
+        if curr_point == target_point:
+            return True
+        if abs(curr_node_val) != net_number:
+            return False
+
+        # TODO: check for better way to mark visited node
+        grid[curr_point.z][curr_point.y][curr_point.z] = sys.maxsize
+
+        number_of_rows = len(grid[0])
+        number_of_columns = len(grid[0][0])
+
+        left, right, up, down, layer_up, layer_down = [False]*6
+        if curr_point.x > 0:
+            next_node = Point3D(x=curr_point.x - 1, y=curr_point.y, z=curr_point.z)
+            left = self._is_pins_connected(grid=grid, net_number=net_number, curr_point=next_node,
+                                           target_point=target_point)
+        if curr_point.x < number_of_columns - 1:
+            next_node = Point3D(x=curr_point.x + 1, y=curr_point.y, z=curr_point.z)
+            right = self._is_pins_connected(grid=grid, net_number=net_number, curr_point=next_node,
+                                            target_point=target_point)
+        if curr_point.y > 0:
+            next_node = Point3D(x=curr_point.x, y=curr_point.y - 1, z=curr_point.z)
+            down = self._is_pins_connected(grid=grid, net_number=net_number, curr_point=next_node,
+                                           target_point=target_point)
+        if curr_point.y < number_of_rows:
+            next_node = Point3D(x=curr_point.x, y=curr_point.y + 1, z=curr_point.z)
+            up = self._is_pins_connected(grid=grid, net_number=net_number, curr_point=next_node,
+                                         target_point=target_point)
+        if curr_point.z == 0:
+            next_node = Point3D(x=curr_point.x, y=curr_point.y, z=curr_point.z + 1)
+            layer_up = self._is_pins_connected(grid=grid, net_number=net_number, curr_point=next_node,
+                                               target_point=target_point)
+        if curr_point.z == 1:
+            next_node = Point3D(x=curr_point.x, y=curr_point.y, z=curr_point.z - 1)
+            layer_down = self._is_pins_connected(grid=grid, net_number=net_number, curr_point=next_node,
+                                                 target_point=target_point)
+
+        grid[curr_point.z][curr_point.y][curr_point.z] = curr_node_val
+        return left or right or up or down or layer_down or layer_up
 
     def _choose_layer(self) -> int:
 
@@ -155,7 +201,10 @@ class RoutingSolution:
             pin_b_random_point = self._vertical_line(grid=grid_copy, starting_point=pin_b_random_point,
                                                      net_number=net_number)
 
-            if self._is_pins_connected(grid=grid_copy):
+            if self._is_pins_connected(grid=grid_copy,
+                                       curr_point=Point3D(x=pin_a.x, y=pin_a.y, z=pin_a.z),
+                                       target_point=Point3D(x=pin_b.x, y=pin_b.y, z=pin_b.z),
+                                       net_number=abs(pin_a.value)):
                 break
             i += 1
 
