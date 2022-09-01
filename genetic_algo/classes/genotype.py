@@ -1,6 +1,4 @@
-from typing import List, Optional
-from igraph import *
-from project_types import *
+from typing import List
 
 
 class Genotype:
