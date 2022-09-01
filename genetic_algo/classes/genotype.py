@@ -7,6 +7,9 @@ import random
 class Genotype:
 
     def __init__(self, num_of_row: int, pins_position: List[List[int]]):  # Idan
+        self.num_of_rows = num_of_row
+        self.num_of_columns = len(pins_position[0])
+        self.pins_position = pins_position
         self.grid = self._generate_initial_genotype(num_of_row=num_of_row, pins_position=pins_position)
 
     @staticmethod
@@ -51,7 +54,7 @@ class Genotype:
     def calculate_genotype_index(self, index: int) -> Point3D:
         pass
 
-    def find_shortest_path(self, point1: Point3D, point2: Point3D) -> Optional[list[Point3D]]:
+    def find_shortest_path(self, point1: Point3D, point2: Point3D) -> Optional[List[Point3D]]:
         """
 
         :param point1:
