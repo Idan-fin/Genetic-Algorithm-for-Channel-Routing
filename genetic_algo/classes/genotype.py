@@ -1,6 +1,7 @@
 from typing import List, Optional
 from igraph import Graph
 from project_types import Point3D
+import random
 
 
 class Genotype:
@@ -8,11 +9,25 @@ class Genotype:
     def __init__(self, num_of_row: int, pins_position: List[List[int]]):  # Idan
         self.grid = self._generate_initial_genotype(num_of_row=num_of_row, pins_position=pins_position)
 
+    @staticmethod
     def _generate_initial_genotype(self, num_of_row: int, pins_position: List[List[int]]) -> List[List[List[int]]]:
+        x = random.randint(num_of_row*2, num_of_row*4)
+
+        genotype = [[[0 for k in range(2)] for j in range(len(pins_position[0]))] for i in range(x)]
+        for j, l in enumerate(genotype[0]):
+            l[0] = pins_position[0][j]
+        for j, l in enumerate(genotype[x-1]):
+            l[0] = pins_position[1][j]
+        return genotype
+
         pass
 
     def _calculate_edge_index(self, x: int, y: int, z: int) -> int:
         return len(self.grid)*len(self.grid[0])*z+len(self.grid)*y+x
+        pass
+
+    def _calculate_edge_index(self, p: Point3D) -> int:
+        return self._calculate_edge_index(p.x, p.y, p.z)
         pass
 
     def create_graph(self, net_id: int) -> Graph:
@@ -43,4 +58,6 @@ class Genotype:
         :param point2:
         :return: Shortest path, Null if path not exist
         """
+        g = self.create_graph(abs(self.grid[point1.x][point1.y][point1.z]))
+        g.get_shortest_paths(self._calculate_edge_index(point1), self._calculate_edge_index(point2))
         pass
