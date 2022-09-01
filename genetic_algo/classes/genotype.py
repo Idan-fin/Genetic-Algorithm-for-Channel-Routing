@@ -1,9 +1,11 @@
-from typing import List
+from typing import List, Optional
+from igraph import Graph
+from project_types import Point3D
 
 
 class Genotype:
 
-    def __init__(self, num_of_row: int, pins_position: List[List[int]]): # Idan
+    def __init__(self, num_of_row: int, pins_position: List[List[int]]):  # Idan
         self.grid = self._generate_initial_genotype(num_of_row=num_of_row, pins_position=pins_position)
 
     def _generate_initial_genotype(self, num_of_row: int, pins_position: List[List[int]]) -> List[List[List[int]]]:
@@ -42,9 +44,3 @@ class Genotype:
         :return: Shortest path, Null if path not exist
         """
         pass
-
-
-
-
-
-
