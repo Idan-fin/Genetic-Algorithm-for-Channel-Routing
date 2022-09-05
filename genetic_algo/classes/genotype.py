@@ -1,6 +1,6 @@
 from typing import List, Optional
 from igraph import Graph
-from project_types import Point3D
+from genetic_algo.classes.project_types import Point3D
 import random
 
 
@@ -10,11 +10,11 @@ class Genotype:
         self.num_of_rows = num_of_row
         self.num_of_columns = len(pins_position[0])
         self.pins_position = pins_position
-        self.grid = self._generate_initial_genotype(num_of_row=num_of_row, pins_position=pins_position)
+        self.grid = Genotype._generate_initial_genotype(num_of_row=num_of_row, pins_position=pins_position)
 
     @staticmethod
-    def _generate_initial_genotype(self, num_of_row: int, pins_position: List[List[int]]) -> List[List[List[int]]]:
-        x = random.randint(num_of_row*2, num_of_row*4)
+    def _generate_initial_genotype(num_of_row: int, pins_position: List[List[int]]) -> List[List[List[int]]]:
+        x = num_of_row #random.randint(num_of_row*2, num_of_row*4)
 
         genotype = [[[0 for k in range(2)] for j in range(len(pins_position[0]))] for i in range(x)]
         for j, l in enumerate(genotype[0]):
@@ -29,7 +29,7 @@ class Genotype:
         return len(self.grid)*len(self.grid[0])*z+len(self.grid)*y+x
         pass
 
-    def _calculate_edge_index(self, p: Point3D) -> int:
+    def _calculate_edge_index2(self, p: Point3D) -> int:
         return self._calculate_edge_index(p.x, p.y, p.z)
         pass
 
@@ -52,7 +52,11 @@ class Genotype:
         pass
 
     def calculate_genotype_index(self, index: int) -> Point3D:
-        pass
+        z: int = index // (len(self.grid)*len(self.grid[0]))
+        index -= (z * len(self.grid)*len(self.grid[0]))
+        y: int = index // len(self.grid)
+        x: int = index % len(self.grid)
+        return Point3D(x, y, z)
 
     def find_shortest_path(self, point1: Point3D, point2: Point3D) -> Optional[List[Point3D]]:
         """
@@ -62,5 +66,8 @@ class Genotype:
         :return: Shortest path, Null if path not exist
         """
         g = self.create_graph(abs(self.grid[point1.x][point1.y][point1.z]))
-        g.get_shortest_paths(self._calculate_edge_index(point1), self._calculate_edge_index(point2))
+        shortest_path = g.get_shortest_paths(self._calculate_edge_index(point1), self._calculate_edge_index(point2))
+        if len(shortest_path[0]) == 0:
+            return None
+        return [self.calculate_genotype_index(node) for node in shortest_path[0]]
         pass
