@@ -99,7 +99,7 @@ class RoutingSolution:
                          net_number: int,
                          genotype: Genotype) -> Point2D:
 
-        left_x, right_x = starting_point.x, starting_point.x
+        left_x, right_x = starting_point.x - 1, starting_point.x + 1
         layer = self._choose_layer()
 
         # draw line from starting point left
@@ -130,7 +130,7 @@ class RoutingSolution:
                        genotype: Genotype,
                        initial_line: bool = False) -> Point2D:
 
-        top_y, bottom_y = starting_point.y, starting_point.y
+        top_y, bottom_y = starting_point.y + 1, starting_point.y - 1
         layer = self._choose_layer()
 
         # draw line from starting point down
@@ -139,7 +139,7 @@ class RoutingSolution:
 
             # see example for this condition in the article section 4.3, image (a).
             # initial line don't stop on nodes with the same net number
-            if abs(current_node_val) > 0 and (abs(current_node_val) != net_number and not initial_line):
+            if abs(current_node_val) > 0 and (abs(current_node_val) != net_number or not initial_line):
                 break
             genotype.grid[layer][bottom_y][starting_point.x] = net_number
             bottom_y -= 1
@@ -151,7 +151,7 @@ class RoutingSolution:
 
             # see example for this condition in the article section 4.3, image (a).
             # initial line don't stop on nodes with the same net number
-            if abs(current_node_val) > 0 and (abs(current_node_val) != net_number and not initial_line):
+            if abs(current_node_val) > 0 and (abs(current_node_val) != net_number or not initial_line):
                 break
             genotype.grid[layer][top_y][starting_point.x] = net_number
             top_y += 1
@@ -164,7 +164,7 @@ class RoutingSolution:
         for i, point in enumerate(path):
             # assign negative value to pins (start/end of the path).
             value = -net_num if i == 0 or i == len(path) - 1 else net_num
-            self.genotype.grid[point.z][point.y][point.x] = net_num
+            self.genotype.grid[point.z][point.y][point.x] = value
 
     def random_routing(self, pin_a: Pin, pin_b: Pin) -> bool:
         """
