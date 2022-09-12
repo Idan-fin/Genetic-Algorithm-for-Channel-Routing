@@ -38,7 +38,7 @@ class InputParams:
         self.pins_position = details["pins_position"]
         f.close()
         self._check_probability_boundary(details["mut_prob"])
-        self._check_pins_position()
+        self.check_pins_position(self.pins_position)
 
     @staticmethod
     def _check_probability_boundary(prob_list: list[int]):
@@ -47,11 +47,12 @@ class InputParams:
                 raise ValueError("probability out of boundary")
     pass
 
-    def _check_pins_position(self):
-        if len(self.pins_position) != 2 or len(self.pins_position[0]) != len(self.pins_position[1]):
+    @staticmethod
+    def check_pins_position(pins_position):
+        if len(pins_position) != 2 or len(pins_position[0]) != len(pins_position[1]):
             raise ValueError("error in pins_position list size")
         match_pins: dict = {}
-        for row in self.pins_position:
+        for row in pins_position:
             for pin in row:
                 if pin < 0:
                     raise ValueError("negative pin net number")
