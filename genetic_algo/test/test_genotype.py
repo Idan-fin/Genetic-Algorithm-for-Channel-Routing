@@ -54,7 +54,8 @@ class MyTestCase(unittest.TestCase):
         genotype.grid[1][0][0] = 1
         genotype.grid[1][1][0] = 1
         genotype.grid[2][1][0] = 1
-        self.assertIsNotNone(genotype.find_shortest_path(point1, point2))
+        res = genotype.find_shortest_path(point1, point2)
+        self.assertIsNotNone(res)
         genotype.grid[1][0][0] = 1
         genotype.grid[1][0][1] = 1
         genotype.grid[1][1][0] = 0
