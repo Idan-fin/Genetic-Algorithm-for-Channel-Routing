@@ -9,7 +9,7 @@ from genetic_algo.test.mock_classes.mock_input_params import MockInputParams
 from genetic_algo.test.data.random_routing_test_data import MOCK_INPUT_DATA
 
 
-class MyTestCase(unittest.TestCase):
+class RandomRoutingTest(unittest.TestCase):
 
     def setUp(self) -> None:
         self.input_params = MockInputParams(input_file_path='mock_path')

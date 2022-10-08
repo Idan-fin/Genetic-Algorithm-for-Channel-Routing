@@ -1,11 +1,14 @@
 import random
 from random import randrange
-from typing import List
+from typing import List, Optional
 from copy import deepcopy
 
 from genetic_algo.classes.input_params import InputParams
 from genetic_algo.classes.genotype import Genotype
 from genetic_algo.classes.project_types import Pin, Point2D, Point3D, Direction
+
+
+NUM_OF_RANDOM_ROUTING_RETRIES = 10  # article param.
 
 
 class RoutingSolution:
@@ -62,7 +65,10 @@ class RoutingSolution:
         return counter
 
     def _calc_via_numbers(self) -> int:
-
+        """
+        Iterate over the grid and look for the same net num at the same (x,y) position in both layers.
+        :return: num of via in this solution.
+        """
         via_counter: int = 0
 
         for row_index, row in enumerate(self.genotype.grid[0]):
@@ -87,9 +93,11 @@ class RoutingSolution:
 
     @staticmethod
     def _choose_layer() -> int:
-
+        """
+        Acording to section 4.3 in the article about choosing a layer .
+        :return: layer num.
+        """
         # TODO: check about the preferred routing direction of each layer.
-        # see section 4.3 in the article abot choosing a layer
 
         r = random.uniform(0, 1)
         return 0 if r < 2 / 3 else 1
@@ -98,7 +106,13 @@ class RoutingSolution:
                          starting_point: Point2D,
                          net_number: int,
                          genotype: Genotype) -> Point2D:
-
+        """
+        Draw horizontal line from a given point.
+        :param starting_point: will draw from this point to the left and right.
+        :param net_number: the new line will contain this net num.
+        :param genotype: genotype to work on.
+        :return: random point on the new line.
+        """
         left_x, right_x = starting_point.x - 1, starting_point.x + 1
         layer = self._choose_layer()
 
@@ -129,7 +143,14 @@ class RoutingSolution:
                        net_number: int,
                        genotype: Genotype,
                        initial_line: bool = False) -> Point2D:
-
+        """
+        Draw vertical line from a given point.
+        :param starting_point: will draw from this point up and down.
+        :param net_number: the new line will contain this net num.
+        :param genotype: genotype to work on.
+        :param initial_line: if True, will continue to draw if encountered the same net num.
+        :return: random point on the new line.
+        """
         top_y, bottom_y = starting_point.y + 1, starting_point.y - 1
         layer = self._choose_layer()
 
@@ -202,6 +223,91 @@ class RoutingSolution:
                 return True
 
         return False
+
+    @staticmethod
+    def _get_pin_to_connect(pool: List[Pin], net_num: Optional[int] = None) -> Pin:
+        """
+        chose random pin with a specific net_num from given list.
+        if didn't get net_num, chose randomly from the entire given list.
+        """
+        chosen_pin_index = randrange(0, len(pool))
+
+        if net_num:
+            same_net_pool = []
+            for i, pin in enumerate(pool):
+                if pin.value == net_num:
+                    same_net_pool.append(i)
+            chosen_pin_index = same_net_pool[randrange(0, len(same_net_pool))]
+
+        return pool.pop(chosen_pin_index)
+
+    def _get_initial_not_connected_pins(self) -> List[Pin]:
+        """
+        create initial pins pool for the given input params.
+        :return: initial not_connected_pins list.
+        """
+        # TODO: check the pins representation in input_params.pins_position
+        return [
+            Pin(x=pin[0], y=pin[1], z=pin[2], value=pin[3]) for pin in self.input_params.pins_position
+        ]
+
+    def extend_genotype_num_of_rows_by_one(self):
+        """
+        When random routing failed for given pins, according to the algorithm we should
+        increase the num of rows by 1 and try again.
+        """
+        row_num = randrange(0, self.genotype.num_of_rows)
+
+        # insert new empty rows
+        self.genotype.grid[0].insert(row_num, [0]*self.genotype.num_of_columns)
+        self.genotype.grid[1].insert(row_num, [0]*self.genotype.num_of_columns)
+
+        # fill the new rows
+        for i in range(self.genotype.grid):
+            for k in range(self.genotype.num_of_columns):
+                # TODO: fill the new rows
+                pass
+
+        self.genotype.num_of_rows += 1
+
+    def connect_all_pins(self) -> bool:
+        """
+        This function will activate the random routing on every pin until all pins are connected.
+        - It will choose randomly 2 pins to connect on every iteration.
+        - Upon random routing failure of 2 pins, this function will increase the num of rows of this
+          individual and will try again.
+        - As described in the article, after 10 unsuccessful extensions, this function will fail.
+        :return: bool for success/failure.
+        """
+        already_connected_pins = []
+        not_connected_pins = self._get_initial_not_connected_pins()
+
+        existing_nets_in_connected_pins = set()
+
+        while not_connected_pins:
+            pin_a = self._get_pin_to_connect(pool=not_connected_pins)
+
+            net_num = abs(pin_a.value)
+            pool_for_pin_b = already_connected_pins if net_num in existing_nets_in_connected_pins \
+                else not_connected_pins
+            pin_b = self._get_pin_to_connect(pool=pool_for_pin_b, net_num=net_num)
+
+            random_routing_success = False
+            for i in range(NUM_OF_RANDOM_ROUTING_RETRIES):
+                if self.random_routing(pin_a=pin_a, pin_b=pin_b):
+                    random_routing_success = True
+                    break
+                else:
+                    self.extend_genotype_num_of_rows_by_one()
+
+            if not random_routing_success:
+                return False
+
+            already_connected_pins.append(pin_a)
+            already_connected_pins.append(pin_b)
+            existing_nets_in_connected_pins.add(net_num)
+
+        return True
 
     def mutate(self):
         pass
