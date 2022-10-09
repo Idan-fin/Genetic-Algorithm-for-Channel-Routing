@@ -20,7 +20,7 @@ class Nucleotide(Point3D):
 
 class Pin(Nucleotide):
     def __init__(self, *args, **kwargs):
-        super(Pin).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._validate()
 

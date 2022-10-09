@@ -235,7 +235,7 @@ class RoutingSolution:
         if net_num:
             same_net_pool = []
             for i, pin in enumerate(pool):
-                if pin.value == net_num:
+                if abs(pin.value) == net_num:
                     same_net_pool.append(i)
             chosen_pin_index = same_net_pool[randrange(0, len(same_net_pool))]
 
