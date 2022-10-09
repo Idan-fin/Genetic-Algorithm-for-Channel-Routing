@@ -1,5 +1,5 @@
 MOCK_INPUT_DATA = {
-    'pins_position': [[1, 2, 3], [4, 5, 6]],
+    'pins_position': [[1, 2, 3], [3, 2, 1]],
     'population_size': 20,
     'net_length_factor': 0.5,
     'via_numbers_factor': 0.5,
