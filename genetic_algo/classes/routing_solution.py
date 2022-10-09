@@ -5,7 +5,7 @@ from copy import deepcopy
 
 from genetic_algo.classes.input_params import InputParams
 from genetic_algo.classes.genotype import Genotype
-from genetic_algo.classes.project_types import Pin, Point2D, Point3D
+from genetic_algo.classes.project_types import Pin, Point2D, Point3D, Direction
 
 
 class RoutingSolution:
@@ -19,22 +19,63 @@ class RoutingSolution:
             pins_position=self.input_params.pins_position)
 
     def _calc_net_length_opp(self) -> int:
-        pass
+        counter: int = 0
+        if self.input_params.preferred_direction_layer[0] == Direction.vertical:
+            counter += self._calc_horizontal_net_length(layer_index=0)
+        if self.input_params.preferred_direction_layer[1] == Direction.vertical:
+            counter += self._calc_horizontal_net_length(layer_index=1)
+        if self.input_params.preferred_direction_layer[0] == Direction.horizontal:
+            counter += self._calc_vertical_net_length(layer_index=0)
+        if self.input_params.preferred_direction_layer[1] == Direction.horizontal:
+            counter += self._calc_vertical_net_length(layer_index=1)
+        return counter
 
+    # todo combine _calc_net_length_acc and _calc_net_length_opp
     def _calc_net_length_acc(self) -> int:
-        pass
+        counter: int = 0
+        if self.input_params.preferred_direction_layer[0] == Direction.horizontal:
+            counter += self._calc_horizontal_net_length(layer_index=0)
+        if self.input_params.preferred_direction_layer[1] == Direction.horizontal:
+            counter += self._calc_horizontal_net_length(layer_index=1)
+        if self.input_params.preferred_direction_layer[0] == Direction.vertical:
+            counter += self._calc_vertical_net_length(layer_index=0)
+        if self.input_params.preferred_direction_layer[1] == Direction.vertical:
+            counter += self._calc_vertical_net_length(layer_index=1)
+        return counter
+
+    def _calc_vertical_net_length(self, layer_index: int) -> int:
+        counter: int = 0
+        for i, y in enumerate(self.genotype.grid):
+            for j, z in enumerate(y):
+                if i <= len(self.genotype.grid) - 2 and abs(self.genotype.grid[i + 1][j][layer_index]) == abs(
+                        self.genotype.grid[i][j][layer_index]):
+                    counter += 1
+        return counter
+
+    def _calc_horizontal_net_length(self, layer_index: int) -> int:
+        counter: int = 0
+        for i, y in enumerate(self.genotype.grid):
+            for j, z in enumerate(y):
+                if j <= len(y) - 2 and i > 0 and abs(self.genotype.grid[i][j + 1][layer_index]) == abs(
+                        self.genotype.grid[i][j][layer_index]):
+                    counter += 1
+        return counter
 
     def _calc_via_numbers(self) -> int:
 
         via_counter: int = 0
 
-        for i in range(self.genotype.grid):
-            for j in range(self.genotype.grid[i]):
+        for i, y in enumerate(self.genotype.grid):
+            for j, z in enumerate(y):
                 if abs(self.genotype.grid[i][j][0]) == abs(
-                        self.genotype.grid[i][j][1]):
+                        self.genotype.grid[i][j][1]) != 0:
                     via_counter += 1
 
         return via_counter
+
+    def calc_fitness_func1(self) -> float:
+        return 1.0/len(self.genotype.grid)
+        pass
 
     def calc_fitness(self) -> float:
         pass

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import IntEnum
 
 
 @dataclass
@@ -25,3 +26,8 @@ class Pin(Nucleotide):
 
     def _validate(self):
         assert self.value < 0
+
+
+class Direction(IntEnum):
+    horizontal = 0
+    vertical = 1
