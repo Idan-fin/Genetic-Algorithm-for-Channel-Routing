@@ -247,26 +247,37 @@ class RoutingSolution:
         :return: initial not_connected_pins list.
         """
         # TODO: check the pins representation in input_params.pins_position
-        return [
-            Pin(x=pin[0], y=pin[1], z=pin[2], value=pin[3]) for pin in self.input_params.pins_position
-        ]
+        bottom_pins = self.input_params.pins_position[0]
+        top_pins = self.input_params.pins_position[1]
+
+        pins_pool = []
+        max_row_index = self.genotype.num_of_rows - 1
+        for i in range(len(bottom_pins)):
+            pins_pool.append(Pin(x=i, y=0, z=0, value=(-bottom_pins[i])))
+            pins_pool.append(Pin(x=i, y=max_row_index, z=0, value=(-top_pins[i])))
+        return pins_pool
 
     def extend_genotype_num_of_rows_by_one(self):
         """
         When random routing failed for given pins, according to the algorithm we should
         increase the num of rows by 1 and try again.
         """
-        row_num = randrange(0, self.genotype.num_of_rows)
+        # TODO: verify that we can avoid rows 0/max_row
+        row_num = randrange(1, self.genotype.num_of_rows-1)  # avoiding 0/max_row rows
 
-        # insert new empty rows
+        # insert new empty row for each layer
         self.genotype.grid[0].insert(row_num, [0]*self.genotype.num_of_columns)
         self.genotype.grid[1].insert(row_num, [0]*self.genotype.num_of_columns)
 
         # fill the new rows
+        # if we have the same net_num above and beneath the new cell it means that we need
+        # to fill the new cell with the same val.
         for i in range(self.genotype.grid):
             for k in range(self.genotype.num_of_columns):
-                # TODO: fill the new rows
-                pass
+                above_val = abs(self.genotype.grid[i][row_num+1][k])
+                beneath_val = abs(self.genotype.grid[i][row_num-1][k])
+                if beneath_val == above_val:
+                    self.genotype.grid[i][row_num][k] = above_val
 
         self.genotype.num_of_rows += 1
 
