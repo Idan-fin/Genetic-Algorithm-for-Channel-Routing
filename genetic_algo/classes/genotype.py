@@ -21,11 +21,11 @@ class Genotype:
     def _generate_initial_genotype(num_of_row: int, pins_position: List[List[int]]) -> List[List[List[int]]]:
         x = num_of_row #random.randint(num_of_row*2, num_of_row*4)
 
-        genotype = [[[0 for k in range(2)] for j in range(len(pins_position[0]))] for i in range(x)]
-        for j, l in enumerate(genotype[0]):
-            l[0] = -pins_position[0][j]
-        for j, l in enumerate(genotype[x-1]):
-            l[0] = -pins_position[1][j]
+        genotype = [[[0 for k in range(len(pins_position[0]))] for j in range(x)] for i in range(2)]
+        for j, l in enumerate(genotype[0][0]):
+            genotype[0][0][j] = -pins_position[0][j]
+        for j, l in enumerate(genotype[0][x-1]):
+            genotype[0][x-1][j] = -pins_position[1][j]
         return genotype
 
         pass
@@ -41,16 +41,16 @@ class Genotype:
     def create_graph(self, net_id: int) -> Graph:
         g = Graph()
         g.add_vertices(len(self.grid)*len(self.grid[0])*len(self.grid[0][0]))
-        for i, y in enumerate(self.grid):
-            for j, z in enumerate(y):
-                for k, val in enumerate(z):
-                    if i <= len(self.grid)-2 and abs(self.grid[i+1][j][k]) == abs(val) == net_id:
-                        g.add_edge(self._calculate_edge_index(i, j, k), (self._calculate_edge_index(i+1, j, k)))
-                    if j <= len(y)-2 and i > 0 and abs(self.grid[i][j+1][k]) == abs(val) == net_id:
-                        g.add_edge(self._calculate_edge_index(i, j, k), (self._calculate_edge_index(i, j+1, k)))
+        for layer_index, layer in enumerate(self.grid):
+            for row_index, row in enumerate(layer):
+                for column_index, val in enumerate(row):
+                    if row_index <= len(self.grid[0])-2 and abs(self.grid[layer_index][row_index+1][column_index]) == abs(val) == net_id:
+                        g.add_edge(self._calculate_edge_index(layer_index, row_index, column_index), (self._calculate_edge_index(layer_index, row_index+1, column_index)))
+                    if column_index <= len(row)-2 and row_index > 0 and abs(self.grid[layer_index][row_index][column_index+1]) == abs(val) == net_id:
+                        g.add_edge(self._calculate_edge_index(layer_index, row_index, column_index), (self._calculate_edge_index(layer_index, row_index, column_index+1)))
 
-                    if k == 0 and abs(self.grid[i][j][k+1]) == abs(val) == net_id:
-                        g.add_edge(self._calculate_edge_index(i, j, k), (self._calculate_edge_index(i, j, k+1)))
+                    if layer_index == 0 and abs(self.grid[1][row_index][column_index]) == abs(val) == net_id:
+                        g.add_edge(self._calculate_edge_index(0, row_index, column_index), (self._calculate_edge_index(1, row_index, column_index)))
 
         return g
         pass
