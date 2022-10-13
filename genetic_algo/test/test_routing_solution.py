@@ -16,16 +16,16 @@ class RoutingSolutionTest(unittest.TestCase):
 
     def test_via_counter(self):
         solution = self._get_simple_routing_example()
-        for i, y in enumerate(solution.genotype.grid):
+        for i, y in enumerate(solution.genotype.grid[0]):
             for j, z in enumerate(y):
-                solution.genotype.grid[i][j][0] = i + 1
-                solution.genotype.grid[i][j][1] = i + 1
-                self.assertEqual(i * len(solution.genotype.grid[0]) + j + 1, solution._calc_via_numbers())
-        for i, y in enumerate(solution.genotype.grid):
+                solution.genotype.grid[0][i][j] = i + 1
+                solution.genotype.grid[1][i][j] = i + 1
+                self.assertEqual(i * len(solution.genotype.grid[0][0]) + j + 1, solution._calc_via_numbers())
+        for i, y in enumerate(solution.genotype.grid[0]):
             for j, z in enumerate(y):
-                solution.genotype.grid[i][j][0] = 0
-                self.assertEqual(len(solution.genotype.grid) * len(solution.genotype.grid[0]) -
-                                 i * len(solution.genotype.grid[0]) - j - 1, solution._calc_via_numbers())
+                solution.genotype.grid[0][i][j] = 0
+                self.assertEqual(len(solution.genotype.grid[0]) * len(solution.genotype.grid[0][0]) -
+                                 i * len(solution.genotype.grid[0][0]) - j - 1, solution._calc_via_numbers())
 
     @staticmethod
     def _get_simple_routing_example() -> RoutingSolution:

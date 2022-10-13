@@ -45,19 +45,19 @@ class RoutingSolution:
 
     def _calc_vertical_net_length(self, layer_index: int) -> int:
         counter: int = 0
-        for i, y in enumerate(self.genotype.grid):
+        for i, y in enumerate(self.genotype.grid[0]):
             for j, z in enumerate(y):
-                if i <= len(self.genotype.grid) - 2 and abs(self.genotype.grid[i + 1][j][layer_index]) == abs(
-                        self.genotype.grid[i][j][layer_index]):
+                if i <= self.genotype.grid[0] and abs(self.genotype.grid[layer_index][i+1][j]) == abs(
+                        self.genotype.grid[layer_index][i][j]):
                     counter += 1
         return counter
 
     def _calc_horizontal_net_length(self, layer_index: int) -> int:
         counter: int = 0
-        for i, y in enumerate(self.genotype.grid):
+        for i, y in enumerate(self.genotype.grid[0]):
             for j, z in enumerate(y):
-                if j <= len(y) - 2 and i > 0 and abs(self.genotype.grid[i][j + 1][layer_index]) == abs(
-                        self.genotype.grid[i][j][layer_index]):
+                if j <= len(y) - 2 and i > 0 and abs(self.genotype.grid[layer_index][i][j + 1]) == abs(
+                        self.genotype.grid[layer_index][i][j]):
                     counter += 1
         return counter
 
@@ -65,16 +65,21 @@ class RoutingSolution:
 
         via_counter: int = 0
 
-        for i, y in enumerate(self.genotype.grid):
-            for j, z in enumerate(y):
-                if abs(self.genotype.grid[i][j][0]) == abs(
-                        self.genotype.grid[i][j][1]) != 0:
+        for row_index, row in enumerate(self.genotype.grid[0]):
+            for column_index, val in enumerate(row):
+                if abs(self.genotype.grid[0][row_index][column_index]) == abs(
+                        self.genotype.grid[1][row_index][column_index]) != 0:
                     via_counter += 1
 
         return via_counter
 
     def calc_fitness_func1(self) -> float:
-        return 1.0/len(self.genotype.grid)
+        return 1.0/len(self.genotype.grid[0][0])
+        pass
+
+    def calc_fitness_func2(self) -> float:
+        return 1.0/(self._calc_net_length_acc()+self.input_params.net_length_factor*self._calc_net_length_opp() +
+                    self._calc_via_numbers()*self.input_params.via_numbers_factor)
         pass
 
     def calc_fitness(self) -> float:
