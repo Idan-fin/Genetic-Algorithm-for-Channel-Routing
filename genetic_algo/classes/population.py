@@ -12,7 +12,25 @@ class Population:
         self.best_solution = self.get_best()
 
     def _generate_initial_population(self) -> List[RoutingSolution]:
-        pass
+        """
+        Create num of routing solutions according to the given input.
+        For each iteration, try to create new solution and connect all pins.
+        If RoutingSolution.connect_all_pins failed, create new RoutingSolution and try again until succeed.
+        :return: initial population.
+        """
+        initial_population = []
+
+        for i in range(self.input_params.population_size):
+
+            solution_created_successfully = False
+            while not solution_created_successfully:
+                next_solution = RoutingSolution(input_params=self.input_params)
+                solution_created_successfully = next_solution.connect_all_pins()
+
+                if solution_created_successfully:
+                    initial_population.append(next_solution)
+
+        return initial_population
 
     def _select_parents(self) -> List[RoutingSolution]:
         pass

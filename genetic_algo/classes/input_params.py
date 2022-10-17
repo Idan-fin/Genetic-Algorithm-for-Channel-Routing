@@ -1,5 +1,6 @@
 from typing import List
 import json
+from genetic_algo.classes.project_types import Direction
 
 
 class InputParams:
@@ -18,6 +19,7 @@ class InputParams:
         self.mut_3_prob: float
         self.mut_4_prob: float
         self.expected_final_row_num: int
+        self.preferred_direction_layer: list[Direction]
 
         self._parse_input_file()
 
@@ -35,9 +37,11 @@ class InputParams:
         self.mut_3_prob = details["mut_prob"]["mut_3_prob"]
         self.mut_4_prob = details["mut_prob"]["mut_4_prob"]
         self.expected_final_row_num = details["expected_final_row_num"]
+        self.preferred_direction_layer = details["preferred_direction_layer"]
         self.pins_position = details["pins_position"]
         f.close()
         self._check_probability_boundary(details["mut_prob"])
+
         self.check_pins_position(self.pins_position)
 
     @staticmethod

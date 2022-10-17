@@ -1,0 +1,25 @@
+{
+                    "details": [
+                        {
+                            "population_size": 10,
+                            "fitness_params":
+                            {
+                                "net_length_factor": 1.001,
+                                "via_numbers_factor": 2.0
+                            },
+                            "max_descendants": 10,
+                            "max_generations": 200,
+                            "mut_prob": 
+                            {
+                                "mut_1_prob": 0.001,
+                                "mut_2_prob": 0.002,
+                                "mut_3_prob": 0.003,
+                                "mut_4_prob": 0.004
+                            },
+                            "expected_final_row_num": 20,
+                            "pins_position": [[1, 2, 3], [3, 2, 1]],
+                            "preferred_direction_layer": [0,1]
+                        }
+                    ]
+                }
+                

@@ -1,7 +1,7 @@
 import unittest
 from genetic_algo.classes.input_params import InputParams
 import os
-
+from genetic_algo.classes.project_types import Direction
 
 class MyTestCase(unittest.TestCase):
 
@@ -26,7 +26,8 @@ class MyTestCase(unittest.TestCase):
                         "mut_4_prob": 0.004
                     },
                     "expected_final_row_num": 20,
-                    "pins_position": [[1, 2, 3], [3, 2, 1]]
+                    "pins_position": [[1, 2, 3], [3, 2, 1]],
+                    "preferred_direction_layer": [0,1]
                 }
             ]
         }
@@ -52,6 +53,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(input_param.max_descendants, 10)
         self.assertEqual(input_param.max_generations, 200)
         self.assertEqual(input_param.expected_final_row_num, 20)
+        self.assertEqual(input_param.preferred_direction_layer[1], Direction.vertical)
+        self.assertEqual(input_param.preferred_direction_layer[0], Direction.horizontal)
 
         pass
 

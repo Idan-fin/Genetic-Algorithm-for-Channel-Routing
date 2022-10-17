@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import IntEnum
 
 
 @dataclass
@@ -19,9 +20,14 @@ class Nucleotide(Point3D):
 
 class Pin(Nucleotide):
     def __init__(self, *args, **kwargs):
-        super(Pin).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._validate()
 
     def _validate(self):
         assert self.value < 0
+
+
+class Direction(IntEnum):
+    horizontal = 0
+    vertical = 1
