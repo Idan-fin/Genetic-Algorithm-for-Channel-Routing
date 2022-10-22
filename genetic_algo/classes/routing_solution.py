@@ -298,7 +298,7 @@ class RoutingSolution:
 
         self.genotype.num_of_rows += 1
 
-    def connect_all_pins(self) -> bool:
+    def connect_all_pins(self, num_of_retries: Optional[int] = None) -> bool:
         """
         This function will activate the random routing on every pin until all pins are connected.
         - It will choose randomly 2 pins to connect on every iteration.
@@ -307,6 +307,8 @@ class RoutingSolution:
         - As described in the article, after 10 unsuccessful extensions, this function will fail.
         :return: bool for success/failure.
         """
+        num_of_random_routing_retries = num_of_retries or NUM_OF_RANDOM_ROUTING_RETRIES
+
         already_connected_pins = []
         not_connected_pins = self._get_initial_not_connected_pins()
 
@@ -321,7 +323,7 @@ class RoutingSolution:
             pin_b = self._get_pin_to_connect(pool=pool_for_pin_b, net_num=net_num)
 
             random_routing_success = False
-            for i in range(NUM_OF_RANDOM_ROUTING_RETRIES):
+            for i in range(num_of_random_routing_retries):
                 if self.random_routing(pin_a=pin_a, pin_b=pin_b):
                     random_routing_success = True
                     break
