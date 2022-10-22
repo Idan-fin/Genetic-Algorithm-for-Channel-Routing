@@ -9,6 +9,11 @@ from genetic_algo.classes.project_types import Pin, Point2D, Point3D, Direction
 
 
 NUM_OF_RANDOM_ROUTING_RETRIES = 10  # article param.
+NUM_OF_LAYERS = 2
+
+
+class CellNotEmptyError(Exception):
+    pass
 
 
 class RoutingSolution:
@@ -116,6 +121,13 @@ class RoutingSolution:
         left_x, right_x = starting_point.x - 1, starting_point.x + 1
         layer = self._choose_layer()
 
+        # TODO: verify this case.
+        # create via or abort if not empty
+        if layer == 1:
+            if genotype.grid[1][starting_point.y][starting_point.x] != 0:
+                raise CellNotEmptyError()
+            genotype.grid[1][starting_point.y][starting_point.x] = net_number
+
         # draw line from starting point left
         while left_x >= 0:
             current_node_val = genotype.grid[layer][starting_point.y][left_x]
@@ -153,6 +165,11 @@ class RoutingSolution:
         """
         top_y, bottom_y = starting_point.y + 1, starting_point.y - 1
         layer = self._choose_layer()
+
+        if layer == 1:
+            if genotype.grid[1][starting_point.y][starting_point.x] != 0:
+                raise CellNotEmptyError()
+            genotype.grid[1][starting_point.y][starting_point.x] = net_number
 
         # draw line from starting point down
         while bottom_y >= 0:
