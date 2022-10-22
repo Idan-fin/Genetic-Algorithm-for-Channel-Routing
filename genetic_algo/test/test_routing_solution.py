@@ -12,7 +12,7 @@ class RoutingSolutionTest(unittest.TestCase):
 
     def test_fitness_func1(self):
         solution = self._get_simple_routing_example()
-        self.assertAlmostEqual(1.0/solution.calc_fitness_func1(), len(solution.genotype.grid))
+        self.assertAlmostEqual(1.0/solution.calc_fitness_func1(), len(solution.genotype.grid[0]))
 
     def test_via_counter(self):
         solution = self._get_simple_routing_example()
