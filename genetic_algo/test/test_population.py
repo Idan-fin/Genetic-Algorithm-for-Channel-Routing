@@ -1,5 +1,7 @@
 import unittest
 
+from random import seed
+
 from genetic_algo.classes.input_params import InputParams
 from genetic_algo.classes.population import Population
 from genetic_algo.classes.routing_solution import RoutingSolution
@@ -8,7 +10,8 @@ from genetic_algo.classes.routing_solution import RoutingSolution
 class PopulationTest(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.input_params = InputParams(input_file_path='test1.json')
+        seed(13)
+        self.input_params = InputParams(input_file_path='test2.json')
 
     def _print_solution(self, sol: RoutingSolution):
         print(sol.genotype.grid)

@@ -125,7 +125,7 @@ class RoutingSolution:
         # create via or abort if not empty
         if layer == 1:
             if genotype.grid[1][starting_point.y][starting_point.x] != 0:
-                raise CellNotEmptyError()
+                return starting_point
             genotype.grid[1][starting_point.y][starting_point.x] = net_number
 
         # draw line from starting point left
@@ -136,7 +136,7 @@ class RoutingSolution:
                 break
             genotype.grid[layer][starting_point.y][left_x] = net_number
             left_x -= 1
-        left_x = 0 if left_x < 0 else left_x
+        left_x += 1
 
         # draw line from starting point right
         while right_x < genotype.num_of_columns:
@@ -146,7 +146,7 @@ class RoutingSolution:
                 break
             genotype.grid[layer][starting_point.y][right_x] = net_number
             right_x += 1
-        right_x = genotype.num_of_columns if right_x >= genotype.num_of_columns else right_x + 1
+        right_x -= 1
 
         return Point2D(x=randrange(left_x, right_x), y=starting_point.y)
 
@@ -168,7 +168,8 @@ class RoutingSolution:
 
         if layer == 1:
             if genotype.grid[1][starting_point.y][starting_point.x] != 0:
-                raise CellNotEmptyError()
+                # TODO: check what to do in that case
+                return starting_point
             genotype.grid[1][starting_point.y][starting_point.x] = net_number
 
         # draw line from starting point down
@@ -181,7 +182,7 @@ class RoutingSolution:
                 break
             genotype.grid[layer][bottom_y][starting_point.x] = net_number
             bottom_y -= 1
-        bottom_y = 0 if bottom_y < 0 else bottom_y
+        bottom_y += 1
 
         # draw line from starting point up
         while top_y < genotype.num_of_rows:
@@ -193,12 +194,13 @@ class RoutingSolution:
                 break
             genotype.grid[layer][top_y][starting_point.x] = net_number
             top_y += 1
-        top_y = genotype.num_of_rows if top_y >= genotype.num_of_rows else top_y + 1
+        # TODO: verify theos increments/decrements
+        top_y -= 1
 
         return Point2D(x=starting_point.x, y=randrange(bottom_y, top_y))
 
     def copy_path_to_genotype(self, path: List[Point3D], net_num: int):
-
+        path = path
         for i, point in enumerate(path):
             # assign negative value to pins (start/end of the path).
             value = -net_num if i == 0 or i == len(path) - 1 else net_num
