@@ -228,9 +228,9 @@ class RoutingSolution:
         for i in range(max_num_of_iter):
             # vertical line from random point
             pin_a_random_point = self._vertical_line(genotype=genotype_copy, starting_point=pin_a_random_point,
-                                                     initial_line=i == 0, net_number=net_number)
+                                                     initial_line=True, net_number=net_number)
             pin_b_random_point = self._vertical_line(genotype=genotype_copy, starting_point=pin_b_random_point,
-                                                     initial_line=i == 0, net_number=net_number)
+                                                     initial_line=True, net_number=net_number)
             # horizontal line from random point
             pin_a_random_point = self._horizontal_line(genotype=genotype_copy, starting_point=pin_a_random_point,
                                                        net_number=net_number)

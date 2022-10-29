@@ -14,10 +14,12 @@ class PopulationTest(unittest.TestCase):
         self.input_params = InputParams(input_file_path='test2.json')
 
     def _print_solution(self, sol: RoutingSolution):
-        print(sol.genotype.grid)
-
+        print('************************************')
+        for layer in sol.genotype.grid:
+            for row in layer:
+                print(row)
+            print('************************************')
     def test_initial_population_sanity_check(self):
         population = Population(input_params=self.input_params)
-        for sol in population.routing_solutions:
-            self._print_solution(sol=sol)
+        self._print_solution(sol=population.routing_solutions[0])
 
