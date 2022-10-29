@@ -46,16 +46,16 @@ class Genotype:
                 for column_index, val in enumerate(row):
                     if row_index <= len(self.grid[0])-2 and \
                             abs(self.grid[layer_index][row_index+1][column_index]) == abs(val) == net_id:
-                        g.add_edge(self._calculate_edge_index(z=layer_index, y=row_index, x=column_index),
-                                   (self._calculate_edge_index(z=layer_index, y=row_index+1, x=column_index)))
+                        g.add_edge(self._calculate_edge_index(layer_index, row_index, column_index),
+                                   (self._calculate_edge_index(layer_index, row_index+1, column_index)))
                     if column_index <= len(row)-2 and row_index > 0 and \
                             abs(self.grid[layer_index][row_index][column_index+1]) == abs(val) == net_id:
-                        g.add_edge(self._calculate_edge_index(z=layer_index, y=row_index, x=column_index),
-                                   (self._calculate_edge_index(z=layer_index, y=row_index, x=column_index+1)))
+                        g.add_edge(self._calculate_edge_index(layer_index, row_index, column_index),
+                                   (self._calculate_edge_index(layer_index, row_index, column_index+1)))
 
                     if layer_index == 0 and abs(self.grid[1][row_index][column_index]) == abs(val) == net_id:
-                        g.add_edge(self._calculate_edge_index(z=0, y=row_index, x=column_index),
-                                   (self._calculate_edge_index(z=1, y=row_index, x=column_index)))
+                        g.add_edge(self._calculate_edge_index(0, row_index, column_index),
+                                   (self._calculate_edge_index(1, row_index, column_index)))
 
         return g
         pass
