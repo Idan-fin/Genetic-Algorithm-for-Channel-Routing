@@ -148,7 +148,8 @@ class RoutingSolution:
             right_x += 1
         right_x -= 1
 
-        return Point2D(x=randrange(left_x, right_x), y=starting_point.y)
+        x = left_x if left_x == right_x else randrange(left_x, right_x)
+        return Point2D(x=x, y=starting_point.y)
 
     def _vertical_line(self,
                        starting_point: Point2D,
@@ -197,7 +198,8 @@ class RoutingSolution:
         # TODO: verify theos increments/decrements
         top_y -= 1
 
-        return Point2D(x=starting_point.x, y=randrange(bottom_y, top_y))
+        y = bottom_y if bottom_y == top_y else randrange(bottom_y, top_y)
+        return Point2D(x=starting_point.x, y=y)
 
     def copy_path_to_genotype(self, path: List[Point3D], net_num: int):
         path = path
@@ -291,7 +293,7 @@ class RoutingSolution:
         # fill the new rows
         # if we have the same net_num above and beneath the new cell it means that we need
         # to fill the new cell with the same val.
-        for i in range(self.genotype.grid):
+        for i in range(NUM_OF_LAYERS):
             for k in range(self.genotype.num_of_columns):
                 above_val = abs(self.genotype.grid[i][row_num+1][k])
                 beneath_val = abs(self.genotype.grid[i][row_num-1][k])
