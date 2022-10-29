@@ -67,6 +67,11 @@ class Genotype:
         x: int = index % len(self.grid)
         return Point3D(x, y, z)
 
+    def calculate_genotype_index_fixed(self, index: int) -> Point3D:
+        point = self.calculate_genotype_index(index=index)
+        return Point3D(point.z, point.y, point.x)
+
+
     def find_shortest_path(self, point1: Point3D, point2: Point3D) -> Optional[List[Point3D]]:
         """
 
@@ -75,8 +80,10 @@ class Genotype:
         :return: Shortest path, Null if path not exist
         """
         g = self.create_graph(abs(self.grid[point1.z][point1.y][point1.x]))
-        shortest_path = g.get_shortest_paths(self._calculate_edge_from_point(point1), self._calculate_edge_from_point(point2))
+        temp_point1 = Point3D(point1.z, point1.y, point1.x)
+        temp_point2 = Point3D(point2.z, point2.y, point2.x)
+        shortest_path = g.get_shortest_paths(self._calculate_edge_from_point(temp_point1), self._calculate_edge_from_point(temp_point2))
         if len(shortest_path[0]) == 0:
             return None
-        return [self.calculate_genotype_index(node) for node in shortest_path[0]]
+        return [self.calculate_genotype_index_fixed(node) for node in shortest_path[0]]
         pass
