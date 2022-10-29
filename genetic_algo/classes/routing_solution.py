@@ -50,8 +50,8 @@ class RoutingSolution:
         counter: int = 0
         for i, y in enumerate(self.genotype.grid[0]):
             for j, z in enumerate(y):
-                if i <= self.genotype.grid[0] and abs(self.genotype.grid[layer_index][i+1][j]) == abs(
-                        self.genotype.grid[layer_index][i][j]):
+                if i < len(self.genotype.grid[0])-1 and abs(self.genotype.grid[layer_index][i+1][j]) == abs(
+                        self.genotype.grid[layer_index][i][j]) != 0:
                     counter += 1
         return counter
 
@@ -60,7 +60,7 @@ class RoutingSolution:
         for i, y in enumerate(self.genotype.grid[0]):
             for j, z in enumerate(y):
                 if j <= len(y) - 2 and i > 0 and abs(self.genotype.grid[layer_index][i][j + 1]) == abs(
-                        self.genotype.grid[layer_index][i][j]):
+                        self.genotype.grid[layer_index][i][j]) != 0:
                     counter += 1
         return counter
 

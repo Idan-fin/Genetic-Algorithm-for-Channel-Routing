@@ -1,5 +1,5 @@
 from typing import List
-
+import collections
 from genetic_algo.classes.input_params import InputParams
 from genetic_algo.classes.routing_solution import RoutingSolution
 
@@ -31,6 +31,16 @@ class Population:
                     initial_population.append(next_solution)
 
         return initial_population
+
+    def _create_fitness_dictionary(self):
+        dictionary = dict()
+        for individual in self.routing_solutions:
+            if dictionary[individual.calc_fitness_func1()]:
+                dictionary[individual.calc_fitness_func1()].append(individual)
+            else:
+                dictionary[individual.calc_fitness_func1()] = [individual]
+
+        
 
     def _select_parents(self) -> List[RoutingSolution]:
         pass
