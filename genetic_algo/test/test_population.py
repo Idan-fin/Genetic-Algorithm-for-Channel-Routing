@@ -11,7 +11,7 @@ class PopulationTest(unittest.TestCase):
 
     def setUp(self) -> None:
         seed(13)
-        self.input_params = InputParams(input_file_path='test2.json')
+        self.input_params = InputParams(input_file_path='test3.json')
 
     def _print_solution(self, sol: RoutingSolution):
         print('************************************')

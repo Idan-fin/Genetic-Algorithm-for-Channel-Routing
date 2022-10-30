@@ -17,8 +17,8 @@
                                 "mut_4_prob": 0.004
                             },
                             "expected_final_row_num": 5,
-                            "pins_position": [[1, 2, 3], [3, 2, 1]],
-                            "preferred_direction_layer": [0, 1, 1]
+                            "pins_position": [[1, 2, 3, 3], [3, 3, 2, 1]],
+                            "preferred_direction_layer": [0, 1, 1, 1]
                         }
                     ]
                 }

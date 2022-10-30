@@ -132,7 +132,7 @@ class RoutingSolution:
         while left_x >= 0:
             current_node_val = genotype.grid[layer][starting_point.y][left_x]
 
-            if abs(current_node_val) > 0:
+            if abs(current_node_val) > 0 and abs(current_node_val) != net_number:
                 break
             genotype.grid[layer][starting_point.y][left_x] = net_number
             left_x -= 1
@@ -142,7 +142,7 @@ class RoutingSolution:
         while right_x < genotype.num_of_columns:
             current_node_val = genotype.grid[layer][starting_point.y][right_x]
 
-            if abs(current_node_val) > 0:
+            if abs(current_node_val) > 0 and abs(current_node_val) != net_number:
                 break
             genotype.grid[layer][starting_point.y][right_x] = net_number
             right_x += 1
@@ -154,14 +154,12 @@ class RoutingSolution:
     def _vertical_line(self,
                        starting_point: Point2D,
                        net_number: int,
-                       genotype: Genotype,
-                       initial_line: bool = False) -> Point2D:
+                       genotype: Genotype) -> Point2D:
         """
         Draw vertical line from a given point.
         :param starting_point: will draw from this point up and down.
         :param net_number: the new line will contain this net num.
         :param genotype: genotype to work on.
-        :param initial_line: if True, will continue to draw if encountered the same net num.
         :return: random point on the new line.
         """
         top_y, bottom_y = starting_point.y + 1, starting_point.y - 1
@@ -179,7 +177,7 @@ class RoutingSolution:
 
             # see example for this condition in the article section 4.3, image (a).
             # initial line don't stop on nodes with the same net number
-            if abs(current_node_val) > 0 and (abs(current_node_val) != net_number or not initial_line):
+            if abs(current_node_val) > 0 and abs(current_node_val) != net_number:
                 break
             genotype.grid[layer][bottom_y][starting_point.x] = net_number
             bottom_y -= 1
@@ -191,7 +189,7 @@ class RoutingSolution:
 
             # see example for this condition in the article section 4.3, image (a).
             # initial line don't stop on nodes with the same net number
-            if abs(current_node_val) > 0 and (abs(current_node_val) != net_number or not initial_line):
+            if abs(current_node_val) > 0 and abs(current_node_val) != net_number:
                 break
             genotype.grid[layer][top_y][starting_point.x] = net_number
             top_y += 1
@@ -228,9 +226,9 @@ class RoutingSolution:
         for i in range(max_num_of_iter):
             # vertical line from random point
             pin_a_random_point = self._vertical_line(genotype=genotype_copy, starting_point=pin_a_random_point,
-                                                     initial_line=True, net_number=net_number)
+                                                     net_number=net_number)
             pin_b_random_point = self._vertical_line(genotype=genotype_copy, starting_point=pin_b_random_point,
-                                                     initial_line=True, net_number=net_number)
+                                                     net_number=net_number)
             # horizontal line from random point
             pin_a_random_point = self._horizontal_line(genotype=genotype_copy, starting_point=pin_a_random_point,
                                                        net_number=net_number)
