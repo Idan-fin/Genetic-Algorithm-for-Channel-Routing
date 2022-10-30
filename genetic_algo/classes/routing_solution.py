@@ -55,7 +55,7 @@ class RoutingSolution:
         counter: int = 0
         for i, y in enumerate(self.genotype.grid[0]):
             for j, z in enumerate(y):
-                if i <= self.genotype.grid[0] and abs(self.genotype.grid[layer_index][i+1][j]) == abs(
+                if i <= self.genotype.grid[0] and abs(self.genotype.grid[layer_index][i + 1][j]) == abs(
                         self.genotype.grid[layer_index][i][j]):
                     counter += 1
         return counter
@@ -85,12 +85,12 @@ class RoutingSolution:
         return via_counter
 
     def calc_fitness_func1(self) -> float:
-        return 1.0/len(self.genotype.grid[0])
+        return 1.0 / len(self.genotype.grid[0])
         pass
 
     def calc_fitness_func2(self) -> float:
-        return 1.0/(self._calc_net_length_acc()+self.input_params.net_length_factor*self._calc_net_length_opp() +
-                    self._calc_via_numbers()*self.input_params.via_numbers_factor)
+        return 1.0 / (self._calc_net_length_acc() + self.input_params.net_length_factor * self._calc_net_length_opp() +
+                      self._calc_via_numbers() * self.input_params.via_numbers_factor)
         pass
 
     def calc_fitness(self) -> float:
@@ -287,23 +287,42 @@ class RoutingSolution:
         increase the num of rows by 1 and try again.
         """
         # TODO: verify that we can avoid rows 0/max_row
-        row_num = randrange(1, self.genotype.num_of_rows-1)  # avoiding 0/max_row rows
+        row_num = randrange(1, self.genotype.num_of_rows - 1)  # avoiding 0/max_row rows
 
         # insert new empty row for each layer
-        self.genotype.grid[0].insert(row_num, [0]*self.genotype.num_of_columns)
-        self.genotype.grid[1].insert(row_num, [0]*self.genotype.num_of_columns)
+        self.genotype.grid[0].insert(row_num, [0] * self.genotype.num_of_columns)
+        self.genotype.grid[1].insert(row_num, [0] * self.genotype.num_of_columns)
 
         # fill the new rows
         # if we have the same net_num above and beneath the new cell it means that we need
         # to fill the new cell with the same val.
         for i in range(NUM_OF_LAYERS):
             for k in range(self.genotype.num_of_columns):
-                above_val = abs(self.genotype.grid[i][row_num+1][k])
-                beneath_val = abs(self.genotype.grid[i][row_num-1][k])
+                above_val = abs(self.genotype.grid[i][row_num + 1][k])
+                beneath_val = abs(self.genotype.grid[i][row_num - 1][k])
                 if beneath_val == above_val:
                     self.genotype.grid[i][row_num][k] = above_val
 
         self.genotype.num_of_rows += 1
+
+    def fix_all_pins_row_index(self,
+                               pin_a: Pin,
+                               pin_b: Pin,
+                               not_connected_pins: List[Pin],
+                               already_connected_pins: List[Pin]) -> (Pin, Pin):
+        new_row = self.genotype.num_of_rows - 1
+        for pin in not_connected_pins:
+            if pin.y > 0:
+                pin.y = new_row
+
+        for pin in already_connected_pins:
+            if pin.y > 0:
+                pin.y = new_row
+
+        pin_a.y = pin_a.y if pin_a.y == 0 else new_row
+        pin_b.y = pin_b.y if pin_b.y == 0 else new_row
+
+        return pin_a, pin_b
 
     def connect_all_pins(self, num_of_retries: Optional[int] = None) -> bool:
         """
@@ -336,6 +355,10 @@ class RoutingSolution:
                     break
                 else:
                     self.extend_genotype_num_of_rows_by_one()
+                    pin_a, pin_b = self.fix_all_pins_row_index(
+                        pin_a=pin_a, pin_b=pin_b,
+                        not_connected_pins=not_connected_pins,
+                        already_connected_pins=already_connected_pins)
 
             if not random_routing_success:
                 return False
