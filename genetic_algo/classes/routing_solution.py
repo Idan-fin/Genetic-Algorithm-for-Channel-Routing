@@ -5,7 +5,7 @@ from copy import deepcopy
 
 from genetic_algo.classes.input_params import InputParams
 from genetic_algo.classes.genotype import Genotype
-from genetic_algo.classes.project_types import Pin, Point2D, Point3D, Direction
+from genetic_algo.classes.project_types import Pin, Point3D, Direction
 
 
 NUM_OF_RANDOM_ROUTING_RETRIES = 10  # article param.
@@ -108,9 +108,9 @@ class RoutingSolution:
         return 0 if r < 2 / 3 else 1
 
     def _horizontal_line(self,
-                         starting_point: Point2D,
+                         starting_point: Point3D,
                          net_number: int,
-                         genotype: Genotype) -> Point2D:
+                         genotype: Genotype) -> Point3D:
         """
         Draw horizontal line from a given point.
         :param starting_point: will draw from this point to the left and right.
@@ -118,15 +118,20 @@ class RoutingSolution:
         :param genotype: genotype to work on.
         :return: random point on the new line.
         """
+
+        # can't draw horizontal line on pins row
+        if starting_point.y in {0, genotype.num_of_rows - 1}:
+            return starting_point
+
         left_x, right_x = starting_point.x - 1, starting_point.x + 1
         layer = self._choose_layer()
 
         # TODO: verify this case.
         # create via or abort if not empty
-        if layer == 1:
-            if genotype.grid[1][starting_point.y][starting_point.x] != 0:
+        if layer != starting_point.z:
+            if genotype.grid[layer][starting_point.y][starting_point.x] not in {0, net_number}:
                 return starting_point
-            genotype.grid[1][starting_point.y][starting_point.x] = net_number
+            genotype.grid[layer][starting_point.y][starting_point.x] = net_number
 
         # draw line from starting point left
         while left_x >= 0:
@@ -149,12 +154,12 @@ class RoutingSolution:
         right_x -= 1
 
         x = left_x if left_x == right_x else randrange(left_x, right_x)
-        return Point2D(x=x, y=starting_point.y)
+        return Point3D(x=x, y=starting_point.y, z=layer)
 
     def _vertical_line(self,
-                       starting_point: Point2D,
+                       starting_point: Point3D,
                        net_number: int,
-                       genotype: Genotype) -> Point2D:
+                       genotype: Genotype) -> Point3D:
         """
         Draw vertical line from a given point.
         :param starting_point: will draw from this point up and down.
@@ -165,11 +170,11 @@ class RoutingSolution:
         top_y, bottom_y = starting_point.y + 1, starting_point.y - 1
         layer = self._choose_layer()
 
-        if layer == 1:
-            if genotype.grid[1][starting_point.y][starting_point.x] != 0:
+        if layer != starting_point.z:
+            if genotype.grid[layer][starting_point.y][starting_point.x] not in {0, net_number}:
                 # TODO: check what to do in that case
                 return starting_point
-            genotype.grid[1][starting_point.y][starting_point.x] = net_number
+            genotype.grid[layer][starting_point.y][starting_point.x] = net_number
 
         # draw line from starting point down
         while bottom_y >= 0:
@@ -197,7 +202,7 @@ class RoutingSolution:
         top_y -= 1
 
         y = bottom_y if bottom_y == top_y else randrange(bottom_y, top_y)
-        return Point2D(x=starting_point.x, y=y)
+        return Point3D(x=starting_point.x, y=y, z=layer)
 
     def copy_path_to_genotype(self, path: List[Point3D], net_num: int):
         path = path
@@ -221,8 +226,8 @@ class RoutingSolution:
 
         net_number = abs(pin_a.value)
         # initial points for vertical lines
-        pin_a_random_point = Point2D(x=pin_a.x, y=pin_a.y)
-        pin_b_random_point = Point2D(x=pin_b.x, y=pin_b.y)
+        pin_a_random_point = Point3D(x=pin_a.x, y=pin_a.y, z=0)
+        pin_b_random_point = Point3D(x=pin_b.x, y=pin_b.y, z=0)
         for i in range(max_num_of_iter):
             # vertical line from random point
             pin_a_random_point = self._vertical_line(genotype=genotype_copy, starting_point=pin_a_random_point,
