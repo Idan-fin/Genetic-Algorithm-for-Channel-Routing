@@ -3,7 +3,7 @@ from unittest.mock import patch
 from typing import List
 from copy import deepcopy
 
-from genetic_algo.classes.project_types import Point3D, Point2D
+from genetic_algo.classes.project_types import Point3D
 from genetic_algo.classes.routing_solution import RoutingSolution
 from genetic_algo.test.mock_classes.mock_input_params import MockInputParams
 from genetic_algo.test.data.random_routing_test_data import MOCK_INPUT_DATA
@@ -18,18 +18,23 @@ class MyTestCase(unittest.TestCase):
 
     def test_choose_layer(self):
         """
-        test case:
-        - when random number is > 2/3 return value is layer 1.
-        - when random number is < 2/3 return value is layer 0.
+        when r < 2 / 3 go with the given direction layer.
+        for this test, layer 0 prefer horizontal, layer 1 prefer vertical
         """
-        with patch('random.uniform', return_value=0.5) as mock_uniform:
-            self.assertEqual(self.routing_solution._choose_layer(), 0)
+        with patch('random.uniform', return_value=0.5) as _mock_uniform:
+            self.assertEqual(self.routing_solution._choose_layer(is_vertical=False), 0)
 
-        with patch('random.uniform', return_value=0.7) as mock_uniform:
-            self.assertEqual(self.routing_solution._choose_layer(), 1)
+        with patch('random.uniform', return_value=0.8) as _mock_uniform:
+            self.assertEqual(self.routing_solution._choose_layer(is_vertical=False), 1)
+
+        with patch('random.uniform', return_value=0.5) as _mock_uniform:
+            self.assertEqual(self.routing_solution._choose_layer(is_vertical=True), 1)
+
+        with patch('random.uniform', return_value=0.8) as _mock_uniform:
+            self.assertEqual(self.routing_solution._choose_layer(is_vertical=True), 0)
 
     @patch('genetic_algo.classes.routing_solution.RoutingSolution._choose_layer', return_value=0)
-    def test_vertical_line_no_obstacle_initial_line(self, mock_choose_layer):
+    def test_vertical_line_no_obstacle_initial_line(self, _mock_choose_layer):
         """
         test case:
         - vertical line from (x=1, y=0, z=0).
@@ -50,39 +55,7 @@ class MyTestCase(unittest.TestCase):
         # get params for horizontal routing
         genotype_copy = deepcopy(self.routing_solution.genotype)
         net_num = 1
-        starting_point = Point2D(x=1, y=0)
-
-        ret = self.routing_solution._vertical_line(starting_point=starting_point, net_number=net_num,
-                                                   genotype=genotype_copy, initial_line=True)
-
-        # validate grid after routing and ret random point
-        self.assertEqual(expected_grid, genotype_copy.grid)
-        self.assertEqual(starting_point.x, ret.x)
-        self.assertGreaterEqual(ret.y, 0)
-        self.assertLess(ret.y, len(old_grid[0]))
-
-    @patch('genetic_algo.classes.routing_solution.RoutingSolution._choose_layer', return_value=0)
-    def test_vertical_line_same_net_num_not_initial(self, mock_choose_layer):
-        """
-        test case:
-        - vertical line from (x=1, y=0, z=0).
-        - point (x=1, y=1, z=0) has the same net num, since this is NOT initial line, we stop.
-        - result - same grid as old grid.
-        """
-        # expected grid and grid before horizontal routing
-        old_grid = [[[0, -1, 0, -2], [0, 1, 0, 0], [0, 0, 0, 0], [-1, 0, 0, -2]],
-                    [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]]
-        expected_grid = old_grid
-
-        # set current genotype grid and params
-        self.routing_solution.genotype.grid = old_grid
-        self.routing_solution.genotype.num_of_rows = len(old_grid[0])
-        self.routing_solution.genotype.num_of_columns = len(old_grid[0][0])
-
-        # get params for horizontal routing
-        genotype_copy = deepcopy(self.routing_solution.genotype)
-        net_num = 1
-        starting_point = Point2D(x=1, y=0)
+        starting_point = Point3D(x=1, y=0, z=0)
 
         ret = self.routing_solution._vertical_line(starting_point=starting_point, net_number=net_num,
                                                    genotype=genotype_copy)
@@ -94,7 +67,7 @@ class MyTestCase(unittest.TestCase):
         self.assertLess(ret.y, len(old_grid[0]))
 
     @patch('genetic_algo.classes.routing_solution.RoutingSolution._choose_layer', return_value=0)
-    def test_vertical_line_not_initial_with_obstacle(self, mock_choose_layer):
+    def test_vertical_line_not_initial_with_obstacle(self, _mock_choose_layer):
         """
         test case:
         - vertical line from (x=1, y=1, z=0).
@@ -115,7 +88,7 @@ class MyTestCase(unittest.TestCase):
         # get params for horizontal routing
         genotype_copy = deepcopy(self.routing_solution.genotype)
         net_num = 1
-        starting_point = Point2D(x=1, y=1)
+        starting_point = Point3D(x=1, y=1, z=0)
 
         ret = self.routing_solution._vertical_line(starting_point=starting_point, net_number=net_num,
                                                    genotype=genotype_copy)
@@ -127,7 +100,7 @@ class MyTestCase(unittest.TestCase):
         self.assertLess(ret.y, len(old_grid[0]))
 
     @patch('genetic_algo.classes.routing_solution.RoutingSolution._choose_layer', return_value=0)
-    def test_horizontal_line_no_obstacle(self, mock_choose_layer):
+    def test_horizontal_line_no_obstacle(self, _mock_choose_layer):
         """
         test case:
         - horizontal line from (x=1, y=1, z=0), no obstacle in the way.
@@ -147,7 +120,7 @@ class MyTestCase(unittest.TestCase):
         # get params for horizontal routing
         genotype_copy = deepcopy(self.routing_solution.genotype)
         net_num = 1
-        starting_point = Point2D(x=1, y=1)
+        starting_point = Point3D(x=1, y=1, z=0)
 
         ret = self.routing_solution._horizontal_line(starting_point=starting_point, net_number=net_num,
                                                      genotype=genotype_copy)
@@ -159,7 +132,7 @@ class MyTestCase(unittest.TestCase):
         self.assertLess(ret.x, len(old_grid[0][0]))
 
     @patch('genetic_algo.classes.routing_solution.RoutingSolution._choose_layer', return_value=0)
-    def test_horizontal_line_with_obstacle(self, mock_choose_layer):
+    def test_horizontal_line_with_obstacle(self, _mock_choose_layer):
         """
         test case:
         - horizontal line from (x=1, y=1, z=0), with obstacle in the way (vertical line in column 3 layer 0).
@@ -179,7 +152,7 @@ class MyTestCase(unittest.TestCase):
         # get params for horizontal routing
         genotype_copy = deepcopy(self.routing_solution.genotype)
         net_num = 1
-        starting_point = Point2D(x=1, y=1)
+        starting_point = Point3D(x=1, y=1, z=0)
 
         ret = self.routing_solution._horizontal_line(starting_point=starting_point, net_number=net_num,
                                                      genotype=genotype_copy)
@@ -227,7 +200,6 @@ class MyTestCase(unittest.TestCase):
 
     def test_random_routing(self):
         """
-        test case:
-        -
+        this will be checked with sanity check in population tests.
         """
         pass

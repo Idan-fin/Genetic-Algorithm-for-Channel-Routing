@@ -4,6 +4,7 @@ from enum import IntEnum
 
 @dataclass
 class Point2D:
+    # TODO: change to column, row, layer
     x: int
     y: int
 

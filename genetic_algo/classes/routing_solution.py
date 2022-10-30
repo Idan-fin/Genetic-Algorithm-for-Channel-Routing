@@ -16,6 +16,10 @@ class CellNotEmptyError(Exception):
     pass
 
 
+class WrongPreferredDirections(Exception):
+    pass
+
+
 class RoutingSolution:
 
     def __init__(self, input_params: InputParams):
@@ -96,16 +100,32 @@ class RoutingSolution:
     def calc_fitness(self) -> float:
         pass
 
-    @staticmethod
-    def _choose_layer() -> int:
+    def _choose_layer(self, is_vertical: bool) -> int:
         """
-        Acording to section 4.3 in the article about choosing a layer .
+        According to section 4.3 in the article about choosing a layer .
+        First calculate the chosen direction according to random number.
+        Finally, chose the layer accordingly.
         :return: layer num.
         """
-        # TODO: check about the preferred routing direction of each layer.
-
         r = random.uniform(0, 1)
-        return 0 if r < 2 / 3 else 1
+        direction = Direction.vertical.value
+
+        if is_vertical and r < 2 / 3:
+            direction = Direction.vertical.value
+        elif is_vertical and r >= 2 / 3:
+            direction = Direction.horizontal.value
+        elif (not is_vertical) and r < 2 / 3:
+            direction = Direction.horizontal.value
+        elif (not is_vertical) and r >= 2 / 3:
+            direction = Direction.vertical.value
+
+        preferred_directions = self.input_params.preferred_direction_layer
+        if direction == preferred_directions[0]:
+            return 0
+        elif direction == preferred_directions[1]:
+            return 1
+        else:
+            raise WrongPreferredDirections()
 
     def _horizontal_line(self,
                          starting_point: Point3D,
@@ -124,7 +144,7 @@ class RoutingSolution:
             return starting_point
 
         left_x, right_x = starting_point.x - 1, starting_point.x + 1
-        layer = self._choose_layer()
+        layer = self._choose_layer(is_vertical=False)
 
         # TODO: verify this case.
         # create via or abort if not empty
@@ -168,7 +188,7 @@ class RoutingSolution:
         :return: random point on the new line.
         """
         top_y, bottom_y = starting_point.y + 1, starting_point.y - 1
-        layer = self._choose_layer()
+        layer = self._choose_layer(is_vertical=True)
 
         if layer != starting_point.z:
             if genotype.grid[layer][starting_point.y][starting_point.x] not in {0, net_number}:

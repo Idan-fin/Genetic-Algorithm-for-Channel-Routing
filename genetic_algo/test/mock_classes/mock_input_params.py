@@ -18,3 +18,4 @@ class MockInputParams(InputParams):
         self.mut_3_prob = kwargs['mut_3_prob']
         self.mut_4_prob = kwargs['mut_4_prob']
         self.expected_final_row_num = kwargs['expected_final_row_num']
+        self.preferred_direction_layer = kwargs["preferred_direction_layer"]
