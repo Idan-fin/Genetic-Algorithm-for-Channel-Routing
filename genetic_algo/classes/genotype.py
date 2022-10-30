@@ -48,7 +48,7 @@ class Genotype:
                             abs(self.grid[layer_index][row_index+1][column_index]) == abs(val) == net_id:
                         g.add_edge(self._calculate_edge_index(layer_index, row_index, column_index),
                                    (self._calculate_edge_index(layer_index, row_index+1, column_index)))
-                    if column_index <= len(row)-2 and row_index > 0 and \
+                    if column_index <= len(row)-2 and len(self.grid[0])-1 > row_index > 0 and \
                             abs(self.grid[layer_index][row_index][column_index+1]) == abs(val) == net_id:
                         g.add_edge(self._calculate_edge_index(layer_index, row_index, column_index),
                                    (self._calculate_edge_index(layer_index, row_index, column_index+1)))
