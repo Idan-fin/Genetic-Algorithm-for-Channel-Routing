@@ -1,5 +1,6 @@
 from typing import List
 from random import randrange
+from copy import deepcopy
 
 from genetic_algo.classes.input_params import InputParams
 from genetic_algo.classes.routing_solution import RoutingSolution
@@ -36,14 +37,6 @@ class Population:
     def _select_parents(self) -> List[RoutingSolution]:
         pass
 
-    def _copy_routing_from_parent(self,
-                                  child: RoutingSolution,
-                                  parent: RoutingSolution,
-                                  cutting_line: int,
-                                  left_to_line: bool):
-        # TODO: implement
-        pass
-
     @staticmethod
     def _make_parents_same_length(parents: List[RoutingSolution]) -> List[RoutingSolution]:
 
@@ -63,14 +56,16 @@ class Population:
 
     def _create_initial_descendant(self, parents: List[RoutingSolution]) -> RoutingSolution:
 
+        parents = [deepcopy(parents[0]), deepcopy(parents[1])]  # don't change the original parents.
         parents = self._make_parents_same_length(parents=parents)
 
+        # TODO: check if we can include column 0 and max_column
         cutting_column_index = randrange(0, parents[0].genotype.num_of_columns)
+
         child = RoutingSolution(input_params=self.input_params)
-        self._copy_routing_from_parent(child=child, parent=parents[0], cutting_line=cutting_column_index,
-                                       left_to_line=True)
-        self._copy_routing_from_parent(child=child, parent=parents[1], cutting_line=cutting_column_index,
-                                       left_to_line=False)
+
+        child.copy_routing_from_parent(parent=parents[0], cutting_line=cutting_column_index, left_to_line=True)
+        child.copy_routing_from_parent(parent=parents[1], cutting_line=cutting_column_index, left_to_line=False)
 
         return child
 

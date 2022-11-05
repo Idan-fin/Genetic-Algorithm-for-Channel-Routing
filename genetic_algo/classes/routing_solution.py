@@ -1,12 +1,15 @@
+# __future__ require python >= 3.7!!
+# for type annotation in copy_routing_from_parent.
+from __future__ import annotations
+
 import random
 from random import randrange
-from typing import List, Optional
+from typing import List, Optional, Dict
 from copy import deepcopy
 
 from genetic_algo.classes.input_params import InputParams
 from genetic_algo.classes.genotype import Genotype
 from genetic_algo.classes.project_types import Pin, Point3D, Direction
-
 
 NUM_OF_RANDOM_ROUTING_RETRIES = 10  # article param.
 NUM_OF_LAYERS = 2
@@ -225,6 +228,8 @@ class RoutingSolution:
         return Point3D(x=starting_point.x, y=y, z=layer)
 
     def copy_path_to_genotype(self, path: List[Point3D], net_num: int):
+
+        net_num = abs(net_num)
         path = path
         for i, point in enumerate(path):
             # assign negative value to pins (start/end of the path).
@@ -285,7 +290,7 @@ class RoutingSolution:
 
         return pool.pop(chosen_pin_index)
 
-    def _get_initial_not_connected_pins(self) -> List[Pin]:
+    def _get_all_pins(self) -> List[Pin]:
         """
         create initial pins pool for the given input params.
         :return: initial not_connected_pins list.
@@ -354,7 +359,7 @@ class RoutingSolution:
         :return: connected and not connected pins lists.
         """
         connected = []
-        not_connected = self._get_initial_not_connected_pins()
+        not_connected = self._get_all_pins()
 
         if is_partially_connected:
             return connected, not_connected
@@ -417,6 +422,73 @@ class RoutingSolution:
             existing_nets_in_connected_pins.add(net_num)
 
         return True
+
+    @staticmethod
+    def _get_clean_parent(parent: RoutingSolution,
+                          cutting_line: int,
+                          left_to_line: bool) -> RoutingSolution:
+
+        for layer in range(NUM_OF_LAYERS):
+            for row in range(parent.genotype.num_of_rows):
+                for column in range(parent.genotype.num_of_columns):
+
+                    clean_current_cell = True
+                    if layer == 0 and (row == 0 or row == parent.genotype.num_of_rows - 1):
+                        # don't delete pins rows
+                        clean_current_cell = False
+                    elif column <= cutting_line and left_to_line:
+                        clean_current_cell = False
+                    elif column > cutting_line and not left_to_line:
+                        clean_current_cell = False
+
+                    current_val = parent.genotype.grid[layer][row][column]
+                    new_val = 0 if clean_current_cell else current_val
+                    parent.genotype.grid[layer][row][column] = new_val
+
+        return parent
+
+    @staticmethod
+    def _get_pins_by_net_num(all_pins: List[Pin]) -> Dict[int, List[Pin]]:
+        pins_dict = {}
+
+        for pin in all_pins:
+            if pin.value in pins_dict:
+                pins_dict[pin.value].append(pin)
+            else:
+                pins_dict[pin.value] = [pin]
+
+        return pins_dict
+
+    def copy_routing_from_parent(self,
+                                 parent: RoutingSolution,
+                                 cutting_line: int,
+                                 left_to_line: bool):
+
+        parent = self._get_clean_parent(parent=parent, cutting_line=cutting_line, left_to_line=left_to_line)
+
+        # necessary info
+        all_pins = self._get_all_pins()
+        pins_by_net_num = self._get_pins_by_net_num(all_pins=all_pins)
+        checked = set()
+
+        # go one by one and copy path between pins if exists in parent.
+        for pin in all_pins:
+
+            # add the current pin in this stage to avoid same pin checking.
+            checked.add(pin)
+
+            # check path only for pins with same net_num.
+            same_net_pins = pins_by_net_num[pin.value]
+            for pin_b in same_net_pins:
+
+                # check for path only for pins we didn't checked before.
+                if pin_b not in checked:
+                    path = parent.genotype.find_shortest_path(
+                        point1=Point3D(z=pin.z, y=pin.y, x=pin.x),
+                        point2=Point3D(z=pin_b.z, y=pin_b.y, x=pin_b.x)
+                    )
+                    if path:
+                        self.copy_path_to_genotype(path=path, net_num=abs(pin.value))
 
     def mutate(self):
         pass
