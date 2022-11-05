@@ -44,10 +44,27 @@ class Population:
         # TODO: implement
         pass
 
+    @staticmethod
+    def _make_parents_same_length(parents: List[RoutingSolution]) -> List[RoutingSolution]:
+
+        parent_a, parent_b = parents[0], parents[1]
+
+        num_of_rows_diff = parent_a.genotype.num_of_rows - parent_b.genotype.num_of_rows
+
+        if num_of_rows_diff == 0:
+            return parents
+
+        longer, shorter = (parent_a, parent_b) if num_of_rows_diff > 0 else (parent_b, parent_a)
+
+        while shorter.genotype.num_of_rows < longer.genotype.num_of_rows:
+            shorter.extend_genotype_num_of_rows_by_one()
+
+        return [longer, shorter]
+
     def _create_initial_descendant(self, parents: List[RoutingSolution]) -> RoutingSolution:
 
-        # TODO: make both parents copies and extend the "shorter" parent
-        #       a.k.a make both parents with the same num of rows
+        parents = self._make_parents_same_length(parents=parents)
+
         cutting_column_index = randrange(0, parents[0].genotype.num_of_columns)
         child = RoutingSolution(input_params=self.input_params)
         self._copy_routing_from_parent(child=child, parent=parents[0], cutting_line=cutting_column_index,
