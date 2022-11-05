@@ -62,7 +62,8 @@ class Population:
         # TODO: check if we can include column 0 and max_column
         cutting_column_index = randrange(0, parents[0].genotype.num_of_columns)
 
-        child = RoutingSolution(input_params=self.input_params)
+        child = RoutingSolution(input_params=self.input_params,
+                                num_of_rows=parents[0].genotype.num_of_rows)
 
         child.copy_routing_from_parent(parent=parents[0], cutting_line=cutting_column_index, left_to_line=True)
         child.copy_routing_from_parent(parent=parents[1], cutting_line=cutting_column_index, left_to_line=False)

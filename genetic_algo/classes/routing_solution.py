@@ -25,13 +25,14 @@ class WrongPreferredDirections(Exception):
 
 class RoutingSolution:
 
-    def __init__(self, input_params: InputParams):
+    def __init__(self, input_params: InputParams, num_of_rows: Optional[int] = None):
         self.fitness = self.calc_fitness()
         self.input_params = input_params
-        self.genotype = Genotype(
-            num_of_row=randrange(2 * self.input_params.expected_final_row_num,
-                                 4 * self.input_params.expected_final_row_num),
-            pins_position=self.input_params.pins_position)
+
+        rand_num_of_rows = randrange(2 * self.input_params.expected_final_row_num,
+                                     4 * self.input_params.expected_final_row_num)
+        num_of_row = num_of_rows or rand_num_of_rows
+        self.genotype = Genotype(num_of_row=num_of_row, pins_position=self.input_params.pins_position)
 
     def _calc_net_length_opp(self) -> int:
         counter: int = 0
