@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 from random import randrange
 
 from genetic_algo.classes.input_params import InputParams
@@ -65,15 +65,14 @@ class Population:
         :param parents: 2 solutions to crossover
         :return: new "child" solution
         """
-        new_sol = self._create_initial_descendant(parents=parents)
-        num_of_connect_all_pin_retries = new_sol.genotype.num_of_rows  # see section 4.6
-        # TODO: fix connect_all_pins to get initial connected pins
-        is_connected = new_sol.connect_all_pins(num_of_retries=num_of_connect_all_pin_retries)
+        new_sol = None
+        is_connected = False
 
         while not is_connected:
             new_sol = self._create_initial_descendant(parents=parents)
             num_of_connect_all_pin_retries = new_sol.genotype.num_of_rows  # see section 4.6
-            is_connected = new_sol.connect_all_pins(num_of_retries=num_of_connect_all_pin_retries)
+            is_connected = new_sol.connect_all_pins(num_of_retries=num_of_connect_all_pin_retries,
+                                                    is_partially_connected=True)
 
         return new_sol
 
