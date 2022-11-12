@@ -1,13 +1,13 @@
 {
                     "details": [
                         {
-                            "population_size": 1,
+                            "population_size": 2,
                             "fitness_params":
                             {
                                 "net_length_factor": 1.001,
                                 "via_numbers_factor": 2.0
                             },
-                            "max_descendants": 10,
+                            "max_descendants": 1,
                             "max_generations": 200,
                             "mut_prob":
                             {

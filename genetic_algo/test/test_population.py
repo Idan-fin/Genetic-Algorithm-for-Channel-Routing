@@ -13,13 +13,20 @@ class PopulationTest(unittest.TestCase):
         seed(13)
         self.input_params = InputParams(input_file_path='test3.json')
 
-    def _print_solution(self, sol: RoutingSolution):
+    @staticmethod
+    def _print_solution(sol: RoutingSolution):
         print('************************************')
         for layer in sol.genotype.grid:
             for row in layer:
                 print(row)
             print('************************************')
+
     def test_initial_population_sanity_check(self):
         population = Population(input_params=self.input_params)
         self._print_solution(sol=population.routing_solutions[0])
 
+    def test_crossover_sanity_check(self):
+        population = Population(input_params=self.input_params)
+        parents = population.routing_solutions[:2]
+        child = population._crossover(parents=parents)
+        self._print_solution(sol=child)
