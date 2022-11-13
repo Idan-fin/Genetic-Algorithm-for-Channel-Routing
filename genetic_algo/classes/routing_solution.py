@@ -1,25 +1,38 @@
+# __future__ require python >= 3.7!!
+# for type annotation in copy_routing_from_parent.
+from __future__ import annotations
+
 import random
 from random import randrange
-from typing import List, Optional
+from typing import List, Optional, Dict
 from copy import deepcopy
 
 from genetic_algo.classes.input_params import InputParams
 from genetic_algo.classes.genotype import Genotype
-from genetic_algo.classes.project_types import Pin, Point2D, Point3D, Direction
-
+from genetic_algo.classes.project_types import Pin, Point3D, Direction
 
 NUM_OF_RANDOM_ROUTING_RETRIES = 10  # article param.
+NUM_OF_LAYERS = 2
+
+
+class CellNotEmptyError(Exception):
+    pass
+
+
+class WrongPreferredDirections(Exception):
+    pass
 
 
 class RoutingSolution:
 
-    def __init__(self, input_params: InputParams):
+    def __init__(self, input_params: InputParams, num_of_rows: Optional[int] = None):
         self.fitness = self.calc_fitness()
         self.input_params = input_params
-        self.genotype = Genotype(
-            num_of_row=randrange(2 * self.input_params.expected_final_row_num,
-                                 4 * self.input_params.expected_final_row_num),
-            pins_position=self.input_params.pins_position)
+
+        rand_num_of_rows = randrange(2 * self.input_params.expected_final_row_num,
+                                     4 * self.input_params.expected_final_row_num)
+        num_of_row = num_of_rows or rand_num_of_rows
+        self.genotype = Genotype(num_of_row=num_of_row, pins_position=self.input_params.pins_position)
 
     def _calc_net_length_opp(self) -> int:
         counter: int = 0
@@ -50,8 +63,8 @@ class RoutingSolution:
         counter: int = 0
         for i, y in enumerate(self.genotype.grid[0]):
             for j, z in enumerate(y):
-                if i < len(self.genotype.grid[0])-1 and abs(self.genotype.grid[layer_index][i+1][j]) == abs(
-                        self.genotype.grid[layer_index][i][j]) != 0:
+                if i <= self.genotype.grid[0] and abs(self.genotype.grid[layer_index][i + 1][j]) == abs(
+                        self.genotype.grid[layer_index][i][j]):
                     counter += 1
         return counter
 
@@ -80,32 +93,48 @@ class RoutingSolution:
         return via_counter
 
     def calc_fitness_func1(self) -> float:
-        return 1.0/len(self.genotype.grid[0])
+        return 1.0 / len(self.genotype.grid[0])
         pass
 
     def calc_fitness_func2(self) -> float:
-        return 1.0/(self._calc_net_length_acc()+self.input_params.net_length_factor*self._calc_net_length_opp() +
-                    self._calc_via_numbers()*self.input_params.via_numbers_factor)
+        return 1.0 / (self._calc_net_length_acc() + self.input_params.net_length_factor * self._calc_net_length_opp() +
+                      self._calc_via_numbers() * self.input_params.via_numbers_factor)
         pass
 
     def calc_fitness(self) -> float:
         pass
 
-    @staticmethod
-    def _choose_layer() -> int:
+    def _choose_layer(self, is_vertical: bool) -> int:
         """
-        Acording to section 4.3 in the article about choosing a layer .
+        According to section 4.3 in the article about choosing a layer .
+        First calculate the chosen direction according to random number.
+        Finally, chose the layer accordingly.
         :return: layer num.
         """
-        # TODO: check about the preferred routing direction of each layer.
-
         r = random.uniform(0, 1)
-        return 0 if r < 2 / 3 else 1
+        direction = Direction.vertical.value
+
+        if is_vertical and r < 2 / 3:
+            direction = Direction.vertical.value
+        elif is_vertical and r >= 2 / 3:
+            direction = Direction.horizontal.value
+        elif (not is_vertical) and r < 2 / 3:
+            direction = Direction.horizontal.value
+        elif (not is_vertical) and r >= 2 / 3:
+            direction = Direction.vertical.value
+
+        preferred_directions = self.input_params.preferred_direction_layer
+        if direction == preferred_directions[0]:
+            return 0
+        elif direction == preferred_directions[1]:
+            return 1
+        else:
+            raise WrongPreferredDirections()
 
     def _horizontal_line(self,
-                         starting_point: Point2D,
+                         starting_point: Point3D,
                          net_number: int,
-                         genotype: Genotype) -> Point2D:
+                         genotype: Genotype) -> Point3D:
         """
         Draw horizontal line from a given point.
         :param starting_point: will draw from this point to the left and right.
@@ -113,46 +142,63 @@ class RoutingSolution:
         :param genotype: genotype to work on.
         :return: random point on the new line.
         """
+
+        # can't draw horizontal line on pins row
+        if starting_point.y in {0, genotype.num_of_rows - 1}:
+            return starting_point
+
         left_x, right_x = starting_point.x - 1, starting_point.x + 1
-        layer = self._choose_layer()
+        layer = self._choose_layer(is_vertical=False)
+
+        # TODO: verify this case.
+        # create via or abort if not empty
+        if layer != starting_point.z:
+            if genotype.grid[layer][starting_point.y][starting_point.x] not in {0, net_number}:
+                return starting_point
+            genotype.grid[layer][starting_point.y][starting_point.x] = net_number
 
         # draw line from starting point left
         while left_x >= 0:
             current_node_val = genotype.grid[layer][starting_point.y][left_x]
 
-            if abs(current_node_val) > 0:
+            if abs(current_node_val) > 0 and abs(current_node_val) != net_number:
                 break
             genotype.grid[layer][starting_point.y][left_x] = net_number
             left_x -= 1
-        left_x = 0 if left_x < 0 else left_x
+        left_x += 1
 
         # draw line from starting point right
         while right_x < genotype.num_of_columns:
             current_node_val = genotype.grid[layer][starting_point.y][right_x]
 
-            if abs(current_node_val) > 0:
+            if abs(current_node_val) > 0 and abs(current_node_val) != net_number:
                 break
             genotype.grid[layer][starting_point.y][right_x] = net_number
             right_x += 1
-        right_x = genotype.num_of_columns if right_x >= genotype.num_of_columns else right_x + 1
+        right_x -= 1
 
-        return Point2D(x=randrange(left_x, right_x), y=starting_point.y)
+        x = left_x if left_x == right_x else randrange(left_x, right_x)
+        return Point3D(x=x, y=starting_point.y, z=layer)
 
     def _vertical_line(self,
-                       starting_point: Point2D,
+                       starting_point: Point3D,
                        net_number: int,
-                       genotype: Genotype,
-                       initial_line: bool = False) -> Point2D:
+                       genotype: Genotype) -> Point3D:
         """
         Draw vertical line from a given point.
         :param starting_point: will draw from this point up and down.
         :param net_number: the new line will contain this net num.
         :param genotype: genotype to work on.
-        :param initial_line: if True, will continue to draw if encountered the same net num.
         :return: random point on the new line.
         """
         top_y, bottom_y = starting_point.y + 1, starting_point.y - 1
-        layer = self._choose_layer()
+        layer = self._choose_layer(is_vertical=True)
+
+        if layer != starting_point.z:
+            if genotype.grid[layer][starting_point.y][starting_point.x] not in {0, net_number}:
+                # TODO: check what to do in that case
+                return starting_point
+            genotype.grid[layer][starting_point.y][starting_point.x] = net_number
 
         # draw line from starting point down
         while bottom_y >= 0:
@@ -160,11 +206,11 @@ class RoutingSolution:
 
             # see example for this condition in the article section 4.3, image (a).
             # initial line don't stop on nodes with the same net number
-            if abs(current_node_val) > 0 and (abs(current_node_val) != net_number or not initial_line):
+            if abs(current_node_val) > 0 and abs(current_node_val) != net_number:
                 break
             genotype.grid[layer][bottom_y][starting_point.x] = net_number
             bottom_y -= 1
-        bottom_y = 0 if bottom_y < 0 else bottom_y
+        bottom_y += 1
 
         # draw line from starting point up
         while top_y < genotype.num_of_rows:
@@ -172,16 +218,20 @@ class RoutingSolution:
 
             # see example for this condition in the article section 4.3, image (a).
             # initial line don't stop on nodes with the same net number
-            if abs(current_node_val) > 0 and (abs(current_node_val) != net_number or not initial_line):
+            if abs(current_node_val) > 0 and abs(current_node_val) != net_number:
                 break
             genotype.grid[layer][top_y][starting_point.x] = net_number
             top_y += 1
-        top_y = genotype.num_of_rows if top_y >= genotype.num_of_rows else top_y + 1
+        # TODO: verify theos increments/decrements
+        top_y -= 1
 
-        return Point2D(x=starting_point.x, y=randrange(bottom_y, top_y))
+        y = bottom_y if bottom_y == top_y else randrange(bottom_y, top_y)
+        return Point3D(x=starting_point.x, y=y, z=layer)
 
     def copy_path_to_genotype(self, path: List[Point3D], net_num: int):
 
+        net_num = abs(net_num)
+        path = path
         for i, point in enumerate(path):
             # assign negative value to pins (start/end of the path).
             value = -net_num if i == 0 or i == len(path) - 1 else net_num
@@ -202,14 +252,14 @@ class RoutingSolution:
 
         net_number = abs(pin_a.value)
         # initial points for vertical lines
-        pin_a_random_point = Point2D(x=pin_a.x, y=pin_a.y)
-        pin_b_random_point = Point2D(x=pin_b.x, y=pin_b.y)
+        pin_a_random_point = Point3D(x=pin_a.x, y=pin_a.y, z=0)
+        pin_b_random_point = Point3D(x=pin_b.x, y=pin_b.y, z=0)
         for i in range(max_num_of_iter):
             # vertical line from random point
             pin_a_random_point = self._vertical_line(genotype=genotype_copy, starting_point=pin_a_random_point,
-                                                     initial_line=i == 0, net_number=net_number)
+                                                     net_number=net_number)
             pin_b_random_point = self._vertical_line(genotype=genotype_copy, starting_point=pin_b_random_point,
-                                                     initial_line=i == 0, net_number=net_number)
+                                                     net_number=net_number)
             # horizontal line from random point
             pin_a_random_point = self._horizontal_line(genotype=genotype_copy, starting_point=pin_a_random_point,
                                                        net_number=net_number)
@@ -241,7 +291,7 @@ class RoutingSolution:
 
         return pool.pop(chosen_pin_index)
 
-    def _get_initial_not_connected_pins(self) -> List[Pin]:
+    def _get_all_pins(self) -> List[Pin]:
         """
         create initial pins pool for the given input params.
         :return: initial not_connected_pins list.
@@ -263,25 +313,73 @@ class RoutingSolution:
         increase the num of rows by 1 and try again.
         """
         # TODO: verify that we can avoid rows 0/max_row
-        row_num = randrange(1, self.genotype.num_of_rows-1)  # avoiding 0/max_row rows
+        row_num = randrange(1, self.genotype.num_of_rows - 1)  # avoiding 0/max_row rows
 
         # insert new empty row for each layer
-        self.genotype.grid[0].insert(row_num, [0]*self.genotype.num_of_columns)
-        self.genotype.grid[1].insert(row_num, [0]*self.genotype.num_of_columns)
+        self.genotype.grid[0].insert(row_num, [0] * self.genotype.num_of_columns)
+        self.genotype.grid[1].insert(row_num, [0] * self.genotype.num_of_columns)
 
         # fill the new rows
         # if we have the same net_num above and beneath the new cell it means that we need
         # to fill the new cell with the same val.
-        for i in range(self.genotype.grid):
+        for i in range(NUM_OF_LAYERS):
             for k in range(self.genotype.num_of_columns):
-                above_val = abs(self.genotype.grid[i][row_num+1][k])
-                beneath_val = abs(self.genotype.grid[i][row_num-1][k])
+                above_val = abs(self.genotype.grid[i][row_num + 1][k])
+                beneath_val = abs(self.genotype.grid[i][row_num - 1][k])
                 if beneath_val == above_val:
                     self.genotype.grid[i][row_num][k] = above_val
 
         self.genotype.num_of_rows += 1
 
-    def connect_all_pins(self) -> bool:
+    def fix_all_pins_row_index(self,
+                               pin_a: Pin,
+                               pin_b: Pin,
+                               not_connected_pins: List[Pin],
+                               already_connected_pins: List[Pin]) -> (Pin, Pin):
+        new_row = self.genotype.num_of_rows - 1
+        for pin in not_connected_pins:
+            if pin.y > 0:
+                pin.y = new_row
+
+        for pin in already_connected_pins:
+            if pin.y > 0:
+                pin.y = new_row
+
+        pin_a.y = pin_a.y if pin_a.y == 0 else new_row
+        pin_b.y = pin_b.y if pin_b.y == 0 else new_row
+
+        return pin_a, pin_b
+
+    def _get_connected_and_not_connected_pins(self, is_partially_connected: bool) -> (List[Pin], List[Pin]):
+        """
+        Check if we have:
+            - for pin in row 0: cell with the same net num in the layer above or row above.
+            - for pin in row max_row: cell with the same net num in the layer above or row beneath.
+        If one of those cases is True the pin is connected.
+        :param is_partially_connected: if False return all pins as not_connected, else check.
+        :return: connected and not connected pins lists.
+        """
+        connected = []
+        not_connected = self._get_all_pins()
+
+        if is_partially_connected:
+            return connected, not_connected
+
+        new_not_connected = []
+        for pin in not_connected:
+            y_addition = 1 if pin.y == 0 else -1
+            if abs(self.genotype.grid[pin.z][pin.y + y_addition][pin.x]) == abs(pin.value):
+                connected.append(pin)
+            elif abs(self.genotype.grid[pin.z + 1][pin.y][pin.x]) == abs(pin.value):
+                connected.append(pin)
+            else:
+                new_not_connected.append(pin)
+
+        return connected, new_not_connected
+
+    def connect_all_pins(self,
+                         num_of_retries: Optional[int] = None,
+                         is_partially_connected: bool = False) -> bool:
         """
         This function will activate the random routing on every pin until all pins are connected.
         - It will choose randomly 2 pins to connect on every iteration.
@@ -290,8 +388,10 @@ class RoutingSolution:
         - As described in the article, after 10 unsuccessful extensions, this function will fail.
         :return: bool for success/failure.
         """
-        already_connected_pins = []
-        not_connected_pins = self._get_initial_not_connected_pins()
+        num_of_random_routing_retries = num_of_retries or NUM_OF_RANDOM_ROUTING_RETRIES
+
+        already_connected_pins, not_connected_pins = self._get_connected_and_not_connected_pins(
+            is_partially_connected=is_partially_connected)
 
         existing_nets_in_connected_pins = set()
 
@@ -304,12 +404,16 @@ class RoutingSolution:
             pin_b = self._get_pin_to_connect(pool=pool_for_pin_b, net_num=net_num)
 
             random_routing_success = False
-            for i in range(NUM_OF_RANDOM_ROUTING_RETRIES):
+            for i in range(num_of_random_routing_retries):
                 if self.random_routing(pin_a=pin_a, pin_b=pin_b):
                     random_routing_success = True
                     break
                 else:
                     self.extend_genotype_num_of_rows_by_one()
+                    pin_a, pin_b = self.fix_all_pins_row_index(
+                        pin_a=pin_a, pin_b=pin_b,
+                        not_connected_pins=not_connected_pins,
+                        already_connected_pins=already_connected_pins)
 
             if not random_routing_success:
                 return False
@@ -319,6 +423,73 @@ class RoutingSolution:
             existing_nets_in_connected_pins.add(net_num)
 
         return True
+
+    @staticmethod
+    def _get_clean_parent(parent: RoutingSolution,
+                          cutting_line: int,
+                          left_to_line: bool) -> RoutingSolution:
+
+        for layer in range(NUM_OF_LAYERS):
+            for row in range(parent.genotype.num_of_rows):
+                for column in range(parent.genotype.num_of_columns):
+
+                    clean_current_cell = True
+                    if layer == 0 and (row == 0 or row == parent.genotype.num_of_rows - 1):
+                        # don't delete pins rows
+                        clean_current_cell = False
+                    elif column <= cutting_line and left_to_line:
+                        clean_current_cell = False
+                    elif column > cutting_line and not left_to_line:
+                        clean_current_cell = False
+
+                    current_val = parent.genotype.grid[layer][row][column]
+                    new_val = 0 if clean_current_cell else current_val
+                    parent.genotype.grid[layer][row][column] = new_val
+
+        return parent
+
+    @staticmethod
+    def _get_pins_by_net_num(all_pins: List[Pin]) -> Dict[int, List[Pin]]:
+        pins_dict = {}
+
+        for pin in all_pins:
+            if pin.value in pins_dict:
+                pins_dict[pin.value].append(pin)
+            else:
+                pins_dict[pin.value] = [pin]
+
+        return pins_dict
+
+    def copy_routing_from_parent(self,
+                                 parent: RoutingSolution,
+                                 cutting_line: int,
+                                 left_to_line: bool):
+
+        parent = self._get_clean_parent(parent=parent, cutting_line=cutting_line, left_to_line=left_to_line)
+
+        # necessary info
+        all_pins = self._get_all_pins()
+        pins_by_net_num = self._get_pins_by_net_num(all_pins=all_pins)
+        checked = set()
+
+        # go one by one and copy path between pins if exists in parent.
+        for pin in all_pins:
+
+            # add the current pin in this stage to avoid same pin checking.
+            checked.add(pin)
+
+            # check path only for pins with same net_num.
+            same_net_pins = pins_by_net_num[pin.value]
+            for pin_b in same_net_pins:
+
+                # check for path only for pins we didn't checked before.
+                if pin_b not in checked:
+                    path = parent.genotype.find_shortest_path(
+                        point1=Point3D(z=pin.z, y=pin.y, x=pin.x),
+                        point2=Point3D(z=pin_b.z, y=pin_b.y, x=pin_b.x)
+                    )
+                    if path:
+                        self.copy_path_to_genotype(path=path, net_num=abs(pin.value))
 
     def mutate(self):
         pass

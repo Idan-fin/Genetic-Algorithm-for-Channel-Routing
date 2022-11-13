@@ -1,5 +1,5 @@
 MOCK_INPUT_DATA = {
-    'pins_position': [[1, 2, 3], [4, 5, 6]],
+    'pins_position': [[1, 2, 3], [3, 2, 1]],
     'population_size': 20,
     'net_length_factor': 0.5,
     'via_numbers_factor': 0.5,
@@ -9,5 +9,6 @@ MOCK_INPUT_DATA = {
     'mut_2_prob': 0.5,
     'mut_3_prob': 0.5,
     'mut_4_prob': 0.5,
-    'expected_final_row_num': 15
+    'expected_final_row_num': 15,
+    'preferred_direction_layer': [0, 1]
 }

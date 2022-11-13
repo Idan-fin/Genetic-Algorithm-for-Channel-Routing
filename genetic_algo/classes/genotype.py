@@ -44,13 +44,18 @@ class Genotype:
         for layer_index, layer in enumerate(self.grid):
             for row_index, row in enumerate(layer):
                 for column_index, val in enumerate(row):
-                    if row_index <= len(self.grid[0])-2 and abs(self.grid[layer_index][row_index+1][column_index]) == abs(val) == net_id:
-                        g.add_edge(self._calculate_edge_index(layer_index, row_index, column_index), (self._calculate_edge_index(layer_index, row_index+1, column_index)))
-                    if column_index <= len(row)-2 and row_index > 0 and abs(self.grid[layer_index][row_index][column_index+1]) == abs(val) == net_id:
-                        g.add_edge(self._calculate_edge_index(layer_index, row_index, column_index), (self._calculate_edge_index(layer_index, row_index, column_index+1)))
+                    if row_index <= len(self.grid[0])-2 and \
+                            abs(self.grid[layer_index][row_index+1][column_index]) == abs(val) == net_id:
+                        g.add_edge(self._calculate_edge_index(layer_index, row_index, column_index),
+                                   (self._calculate_edge_index(layer_index, row_index+1, column_index)))
+                    if column_index <= len(row)-2 and len(self.grid[0])-1 > row_index > 0 and \
+                            abs(self.grid[layer_index][row_index][column_index+1]) == abs(val) == net_id:
+                        g.add_edge(self._calculate_edge_index(layer_index, row_index, column_index),
+                                   (self._calculate_edge_index(layer_index, row_index, column_index+1)))
 
                     if layer_index == 0 and abs(self.grid[1][row_index][column_index]) == abs(val) == net_id:
-                        g.add_edge(self._calculate_edge_index(0, row_index, column_index), (self._calculate_edge_index(1, row_index, column_index)))
+                        g.add_edge(self._calculate_edge_index(0, row_index, column_index),
+                                   (self._calculate_edge_index(1, row_index, column_index)))
 
         return g
         pass
@@ -62,6 +67,11 @@ class Genotype:
         x: int = index % len(self.grid)
         return Point3D(x, y, z)
 
+    def calculate_genotype_index_fixed(self, index: int) -> Point3D:
+        point = self.calculate_genotype_index(index=index)
+        return Point3D(point.z, point.y, point.x)
+
+
     def find_shortest_path(self, point1: Point3D, point2: Point3D) -> Optional[List[Point3D]]:
         """
 
@@ -69,9 +79,11 @@ class Genotype:
         :param point2:
         :return: Shortest path, Null if path not exist
         """
-        g = self.create_graph(abs(self.grid[point1.x][point1.y][point1.z]))
-        shortest_path = g.get_shortest_paths(self._calculate_edge_from_point(point1), self._calculate_edge_from_point(point2))
+        g = self.create_graph(abs(self.grid[point1.z][point1.y][point1.x]))
+        temp_point1 = Point3D(point1.z, point1.y, point1.x)
+        temp_point2 = Point3D(point2.z, point2.y, point2.x)
+        shortest_path = g.get_shortest_paths(self._calculate_edge_from_point(temp_point1), self._calculate_edge_from_point(temp_point2))
         if len(shortest_path[0]) == 0:
             return None
-        return [self.calculate_genotype_index(node) for node in shortest_path[0]]
+        return [self.calculate_genotype_index_fixed(node) for node in shortest_path[0]]
         pass
