@@ -4,6 +4,7 @@ from random import randrange
 from copy import deepcopy
 from genetic_algo.classes.input_params import InputParams
 from genetic_algo.classes.routing_solution import RoutingSolution
+import random
 
 
 class Population:
@@ -12,6 +13,7 @@ class Population:
         self.input_params: InputParams = input_params
         self.routing_solutions = self._generate_initial_population()
         self.best_solution = self.get_best()
+        self.dictionary_by_fitness = self._create_fitness_dictionary()
 
     def _generate_initial_population(self) -> List[RoutingSolution]:
         """
@@ -34,19 +36,120 @@ class Population:
 
         return initial_population
 
-    def _create_fitness_dictionary(self):
-        dictionary = dict()
-        for individual in self.routing_solutions:
-            if dictionary[individual.calc_fitness_func1()]:
-                dictionary[individual.calc_fitness_func1()].append(individual)
-            else:
-                dictionary[individual.calc_fitness_func1()] = [individual]
+    @staticmethod
+    def _calc_fitness_func2(individual: RoutingSolution):
+        return individual.calc_fitness_func2()
 
-        
+    @staticmethod
+    def _add_to_dictionary(dictionary, key, val):
+        if key in dictionary:
+            dictionary[key].append(val)
+        else:
+            dictionary[key] = [val]
+
+    @staticmethod
+    def _calculate_f_p_i(individual_i: RoutingSolution):
+        return individual_i.calc_fitness_func1()
+
+    @staticmethod
+    def _calculate_f_p_j(individual_j: RoutingSolution,
+                         individual_j_plus_1_fitness: RoutingSolution, size_of_list):
+        return individual_j.calc_fitness_func1() - \
+               ((individual_j_plus_1_fitness - individual_j.calc_fitness_func1()) / size_of_list)
+
+    @staticmethod
+    def _calculate_f_p_x(individual_x: RoutingSolution,
+                         individual_i: RoutingSolution, individual_j: RoutingSolution, f_p_i, f_p_j, f_2_p_i, f_2_p_j):
+        delta_f = f_p_j - f_p_i
+        delta_f_2 = f_2_p_i-f_2_p_j
+        return f_p_j-(delta_f*(f_2_p_j-individual_x.calc_fitness_func2()))/delta_f_2
+
+
+    def _add_fitness_group_to_dictionary(self, dictionary_by_fitness, individual_list, p_j_plus_1_fitness):
+        iterator = 0
+        for individual in individual_list:
+            if iterator == 0:
+                p_i = individual
+                p_i_fitness = self._calculate_f_p_i(p_i)
+                self._add_to_dictionary(dictionary_by_fitness, p_i_fitness,
+                                        p_i)
+                if len(individual_list) > 1:
+                    p_j = individual_list[len(individual_list) - 1]
+                    p_j_fitness = self._calculate_f_p_j(p_j,p_j_plus_1_fitness, len(individual_list))
+                    self._add_to_dictionary(dictionary_by_fitness, p_j_fitness, p_j)
+            else:
+                if len(individual_list) > 2:
+                    p_x = individual
+                    p_x_fitness = self._calculate_f_p_x(p_x, p_i, p_j, p_i_fitness,
+                                                        p_j_fitness, p_i.calc_fitness_func2(),
+                                                        p_j.calc_fitness_func2())
+                    self._add_to_dictionary(dictionary_by_fitness, p_x_fitness,
+                                            p_x)
+            iterator += 1
+
+    def _create_fitness_dictionary(self):
+        dictionary_by_fitness_function1 = dict()
+        for individual in self.routing_solutions:
+            self._add_to_dictionary(dictionary_by_fitness_function1, individual.calc_fitness_func1(), individual)
+        dictionary_by_fitness = dict()
+        k = 0
+        prev_fitness: float
+        prev_list: list
+        for fitness, individual_list in sorted(dictionary_by_fitness_function1.items()):
+            individual_list.sort(key=self._calc_fitness_func2)
+            if k == 0:
+                prev_fitness = fitness
+                prev_list = individual_list
+            else:
+
+                p_j: RoutingSolution
+                p_j_fitness: float
+                p_i: RoutingSolution
+                p_i_fitness: float
+                self._add_fitness_group_to_dictionary(dictionary_by_fitness, prev_list,
+                                                      fitness)
+                prev_fitness = fitness
+                prev_list = individual_list
+            k += 1
+        self._add_fitness_group_to_dictionary(dictionary_by_fitness, prev_list, 1/(1/prev_fitness)-1)
+        temp = sorted(dictionary_by_fitness.items())
+        return dict((x, y) for x, y in temp)
+
+    def _sum_all_fitness(self) -> float:
+        fitness_sum = 0
+        for fitness, individual_list in self.dictionary_by_fitness.items():
+            fitness_sum += fitness*len(individual_list)
+        return fitness_sum
+
+    @staticmethod
+    def _choose_random_element_from_list(elements_list):
+        rand = random.randint(0, len(elements_list)-1)
+        return elements_list[rand]
+
+    def _select_individual(self, sum_all_fitness: float):
+        first_fitness = self.dictionary_by_fitness.__iter__().__next__()
+        rand = random.uniform(first_fitness, sum_all_fitness)
+        iterator = 0
+        prev_fitness = 0
+        prev_list: list[RoutingSolution]
+        selected_list: list[RoutingSolution]
+        for fitness, individual_list in self.dictionary_by_fitness.items():
+            if iterator == 0:
+                last_fitness = fitness
+                last_list = individual_list
+                selected_list = individual_list
+            else:
+                if fitness >= rand:
+                    if rand-prev_fitness<fitness-rand:
+                        selected_list = last_list
+                    else:
+                        selected_list = individual_list
+                    break
+        return self._choose_random_element_from_list(selected_list)
 
     def _select_parents(self) -> List[RoutingSolution]:
-        pass
-
+        sum_all_fitness = self._sum_all_fitness()
+        return [self._select_individual(sum_all_fitness), self._select_individual(sum_all_fitness)]
     @staticmethod
     def _make_parents_same_length(parents: List[RoutingSolution]) -> List[RoutingSolution]:
 

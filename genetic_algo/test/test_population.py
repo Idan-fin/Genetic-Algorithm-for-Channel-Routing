@@ -21,12 +21,29 @@ class PopulationTest(unittest.TestCase):
                 print(row)
             print('************************************')
 
+    @staticmethod
+    def _print_fitness(dictionary_by_fitness):
+        print('************************************')
+        for fitness, individual_list in dictionary_by_fitness.items():
+            print("fitness: " + str(fitness))
+        print('************************************')
+
+
+
     def test_initial_population_sanity_check(self):
         population = Population(input_params=self.input_params)
         self._print_solution(sol=population.routing_solutions[0])
+        self._print_fitness(population.dictionary_by_fitness)
 
     def test_crossover_sanity_check(self):
         population = Population(input_params=self.input_params)
         parents = population.routing_solutions[:2]
         child = population._crossover(parents=parents)
         self._print_solution(sol=child)
+
+    def test_select_parents_sanity_check(self):
+        population = Population(input_params=self.input_params)
+        parents = population._select_parents()
+        self._print_solution(parents[0])
+        self._print_solution(parents[1])
+

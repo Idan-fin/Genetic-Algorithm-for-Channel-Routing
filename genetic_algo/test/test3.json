@@ -1,7 +1,7 @@
 {
                     "details": [
                         {
-                            "population_size": 2,
+                            "population_size": 20,
                             "fitness_params":
                             {
                                 "net_length_factor": 1.001,

@@ -63,7 +63,7 @@ class RoutingSolution:
         counter: int = 0
         for i, y in enumerate(self.genotype.grid[0]):
             for j, z in enumerate(y):
-                if i <= self.genotype.grid[0] and abs(self.genotype.grid[layer_index][i + 1][j]) == abs(
+                if i < len(self.genotype.grid[0])-1 and abs(self.genotype.grid[layer_index][i+1][j]) == abs(
                         self.genotype.grid[layer_index][i][j]):
                     counter += 1
         return counter
