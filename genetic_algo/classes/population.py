@@ -4,7 +4,9 @@ from random import randrange
 from copy import deepcopy
 from genetic_algo.classes.input_params import InputParams
 from genetic_algo.classes.routing_solution import RoutingSolution
+from genetic_algo.classes.genotype import Genotype
 import random
+from collections import OrderedDict
 
 
 class Population:
@@ -12,8 +14,8 @@ class Population:
     def __init__(self, input_params: InputParams):
         self.input_params: InputParams = input_params
         self.routing_solutions = self._generate_initial_population()
-        self.best_solution = self.get_best()
         self.dictionary_by_fitness = self._create_fitness_dictionary()
+        self.best_solution = self._get_dictionary_best()
 
     def _generate_initial_population(self) -> List[RoutingSolution]:
         """
@@ -61,9 +63,8 @@ class Population:
     def _calculate_f_p_x(individual_x: RoutingSolution,
                          individual_i: RoutingSolution, individual_j: RoutingSolution, f_p_i, f_p_j, f_2_p_i, f_2_p_j):
         delta_f = f_p_j - f_p_i
-        delta_f_2 = f_2_p_i-f_2_p_j
-        return f_p_j-(delta_f*(f_2_p_j-individual_x.calc_fitness_func2()))/delta_f_2
-
+        delta_f_2 = f_2_p_i - f_2_p_j
+        return f_p_j - (delta_f * (f_2_p_j - individual_x.calc_fitness_func2())) / delta_f_2
 
     def _add_fitness_group_to_dictionary(self, dictionary_by_fitness, individual_list, p_j_plus_1_fitness):
         iterator = 0
@@ -75,7 +76,7 @@ class Population:
                                         p_i)
                 if len(individual_list) > 1:
                     p_j = individual_list[len(individual_list) - 1]
-                    p_j_fitness = self._calculate_f_p_j(p_j,p_j_plus_1_fitness, len(individual_list))
+                    p_j_fitness = self._calculate_f_p_j(p_j, p_j_plus_1_fitness, len(individual_list))
                     self._add_to_dictionary(dictionary_by_fitness, p_j_fitness, p_j)
             else:
                 if len(individual_list) > 2:
@@ -88,10 +89,10 @@ class Population:
             iterator += 1
 
     def _create_fitness_dictionary(self):
-        dictionary_by_fitness_function1 = dict()
+        dictionary_by_fitness_function1 = OrderedDict()
         for individual in self.routing_solutions:
             self._add_to_dictionary(dictionary_by_fitness_function1, individual.calc_fitness_func1(), individual)
-        dictionary_by_fitness = dict()
+        dictionary_by_fitness = OrderedDict()
         k = 0
         prev_fitness: float
         prev_list: list
@@ -111,19 +112,19 @@ class Population:
                 prev_fitness = fitness
                 prev_list = individual_list
             k += 1
-        self._add_fitness_group_to_dictionary(dictionary_by_fitness, prev_list, 1/(1/prev_fitness)-1)
+        self._add_fitness_group_to_dictionary(dictionary_by_fitness, prev_list, 1 / (1 / prev_fitness) - 1)
         temp = sorted(dictionary_by_fitness.items())
         return dict((x, y) for x, y in temp)
 
     def _sum_all_fitness(self) -> float:
         fitness_sum = 0
         for fitness, individual_list in self.dictionary_by_fitness.items():
-            fitness_sum += fitness*len(individual_list)
+            fitness_sum += fitness * len(individual_list)
         return fitness_sum
 
     @staticmethod
     def _choose_random_element_from_list(elements_list):
-        rand = random.randint(0, len(elements_list)-1)
+        rand = random.randint(0, len(elements_list) - 1)
         return elements_list[rand]
 
     def _select_individual(self, sum_all_fitness: float):
@@ -140,7 +141,7 @@ class Population:
                 selected_list = individual_list
             else:
                 if fitness >= rand:
-                    if rand-prev_fitness<fitness-rand:
+                    if rand - prev_fitness < fitness - rand:
                         selected_list = last_list
                     else:
                         selected_list = individual_list
@@ -150,6 +151,7 @@ class Population:
     def _select_parents(self) -> List[RoutingSolution]:
         sum_all_fitness = self._sum_all_fitness()
         return [self._select_individual(sum_all_fitness), self._select_individual(sum_all_fitness)]
+
     @staticmethod
     def _make_parents_same_length(parents: List[RoutingSolution]) -> List[RoutingSolution]:
 
@@ -209,13 +211,48 @@ class Population:
         Num of descendants = input_params.max_descendants
         """
         # TODO: verify
-        for i in range(self.input_params.max_descendants):
+        for i in range(self.input_params.max_descendants-1):
             parents = self._select_parents()
             new_sol = self._crossover(parents=parents)
             self.routing_solutions.append(new_sol)
+        self.dictionary_by_fitness = self._create_fitness_dictionary()
 
     def reduction(self) -> None:
-        pass
+        num_of_solutions_to_remove = self.input_params.max_descendants
+        new_routing_solutions = []
+        for fitness, individual_list in self.dictionary_by_fitness.items():
+            if num_of_solutions_to_remove == 0:
+                for individual in individual_list:
+                    new_routing_solutions.append(individual)
+            else:
+                num_of_solutions_to_remove -= len(individual_list)
+                for individual in individual_list:
+                    if num_of_solutions_to_remove < 0:
+                        new_routing_solutions.append(individual)
+                        num_of_solutions_to_remove += 1
+                    else:
+                        break
+        self.routing_solutions = new_routing_solutions
+
+    def _get_dictionary_best(self) -> RoutingSolution:
+
+        return list(self.dictionary_by_fitness.items())[-1][1][0]
 
     def get_best(self) -> RoutingSolution:
+        dictionary_best = self._get_dictionary_best()
+        dictionary_best_fitness_func1 = self.best_solution.calc_fitness_func1()
+        old_best_fitness_func1 = dictionary_best.calc_fitness_func1()
+
+        if dictionary_best_fitness_func1 > old_best_fitness_func1:
+            return self.best_solution
+        elif dictionary_best_fitness_func1 < old_best_fitness_func1:
+            return dictionary_best
+        else:
+            dictionary_best_fitness_func2 = self.best_solution.calc_fitness_func2()
+            old_best_fitness_func2 = dictionary_best.calc_fitness_func2()
+            if dictionary_best_fitness_func2 > old_best_fitness_func2:
+                return self.best_solution
+            else:
+                return dictionary_best
+
         pass

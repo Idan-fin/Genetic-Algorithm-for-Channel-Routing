@@ -6,6 +6,7 @@ import random
 
 
 class Genotype:
+    g = Graph()
 
     def __init__(self, num_of_row: int, pins_position: List[List[int]]):  # Idan
         self.num_of_rows = num_of_row
@@ -39,7 +40,8 @@ class Genotype:
         pass
 
     def create_graph(self, net_id: int) -> Graph:
-        g = Graph()
+        g = Genotype.g
+        g.clear()
         g.add_vertices(len(self.grid)*len(self.grid[0])*len(self.grid[0][0]))
         for layer_index, layer in enumerate(self.grid):
             for row_index, row in enumerate(layer):
@@ -58,7 +60,6 @@ class Genotype:
                                    (self._calculate_edge_index(1, row_index, column_index)))
 
         return g
-        pass
 
     def calculate_genotype_index(self, index: int) -> Point3D:
         z: int = index // (len(self.grid)*len(self.grid[0]))

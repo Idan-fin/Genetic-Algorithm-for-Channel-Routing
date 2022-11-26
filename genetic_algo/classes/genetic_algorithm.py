@@ -9,4 +9,8 @@ class GeneticAlgorithm:
         self.population = Population(input_params=input_params)
 
     def run(self) -> OutputType:
+        for i in range(self.input_params.max_generations):
+            self.population.generate_next_generation()
+            self.population.reduction()
+            self.population.best_solution = self.population.get_best()
         pass

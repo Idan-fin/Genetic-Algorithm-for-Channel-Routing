@@ -47,3 +47,7 @@ class PopulationTest(unittest.TestCase):
         self._print_solution(parents[0])
         self._print_solution(parents[1])
 
+    def test_generate_next_generation_sanity_check(self):
+        population = Population(input_params=self.input_params)
+        population.generate_next_generation()
+
