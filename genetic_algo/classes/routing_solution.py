@@ -362,6 +362,7 @@ class RoutingSolution:
         connected = []
         not_connected = self._get_all_pins()
 
+        # TODO - fix BUG should be "if not is_partially_connected"
         if is_partially_connected:
             return connected, not_connected
 
@@ -491,7 +492,56 @@ class RoutingSolution:
                     if path:
                         self.copy_path_to_genotype(path=path, net_num=abs(pin.value))
 
-    def mutate(self):
+    def _remove_entire_net(self, net_num: int):
+        pass
+
+    def _remove_random_rectangle(self):
+        pass
+
+    def _mutation_1(self, retries: int):
+        """
+        mutation 1 will remove and reconnect routs from random rectangle.
+        """
+        self._remove_random_rectangle()
+
+        return self.connect_all_pins(num_of_retries=retries, is_partially_connected=True)
+
+    def _mutation_2(self, retries: int):
+        """
+        mutation 2 will delete and reroute nets randomly.
+        """
+        all_nets = {abs(val) for val in self.genotype.pins_position[0] + self.genotype.pins_position[1]}
+
+        num_of_nets_to_remove = randrange(0, len(all_nets))
+
+        for _ in range(num_of_nets_to_remove):
+            net_num = all_nets.pop()
+            self._remove_entire_net(net_num=net_num)
+
+        return self.connect_all_pins(num_of_retries=retries, is_partially_connected=True)
+
+    def _mutation_3(self, retries: int):
+        """
+        mutation 3 will add row in a random index.
+        """
+        self.extend_genotype_num_of_rows_by_one()
+
+        return True
+
+    def _mutation_4(self, retries: int):
+        """
+        mutation 4 will remove row in a random index.
+        """
+        row_num = randrange(1, self.genotype.num_of_rows - 1)  # avoiding 0/max_row rows
+
+        # remove row from both layers
+        self.genotype.grid[0].pop(row_num)
+        self.genotype.grid[1].pop(row_num)
+        self.genotype.num_of_rows -= 1
+
+        return self.connect_all_pins(num_of_retries=retries, is_partially_connected=True)
+
+    def mutate(self, retries: int) -> bool:
         pass
 
     def optimize(self):

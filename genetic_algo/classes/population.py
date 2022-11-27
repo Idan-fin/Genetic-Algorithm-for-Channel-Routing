@@ -256,3 +256,24 @@ class Population:
                 return dictionary_best
 
         pass
+
+    def mutate_all_solutions_and_calc_new_fitness(self):
+        """
+        Activate mutate() for every routing solution.
+        mutate(), will perform 1 of 4 mutation or not at all,
+        according to the odds specified in the article.
+        Finally, calc new fitness.
+        """
+        num_of_retries = 30  # article param
+
+        population_after_mutation = []
+
+        for sol in self.routing_solutions:
+            old_sol = deepcopy(sol)
+            success = sol.mutate(retries=num_of_retries)
+
+            population_after_mutation.append(sol if success else old_sol)
+
+        self.routing_solutions = population_after_mutation
+
+        self.dictionary_by_fitness = self._create_fitness_dictionary()

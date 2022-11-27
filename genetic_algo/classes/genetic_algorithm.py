@@ -13,4 +13,4 @@ class GeneticAlgorithm:
             self.population.generate_next_generation()
             self.population.reduction()
             self.population.best_solution = self.population.get_best()
-        pass
+            self.population.mutate_all_solutions_and_calc_new_fitness()
