@@ -493,10 +493,33 @@ class RoutingSolution:
                         self.copy_path_to_genotype(path=path, net_num=abs(pin.value))
 
     def _remove_entire_net(self, net_num: int):
-        pass
+        net_num = abs(net_num)
+        for i in range(NUM_OF_LAYERS):
+            for j in range(self.genotype.num_of_rows):
+                for k in range(self.genotype.num_of_columns):
+                    current_val = self.genotype.grid[i][j][k]
+                    self.genotype.grid[i][j][k] = current_val if current_val != net_num else 0
 
     def _remove_random_rectangle(self):
-        pass
+
+        rand_x = randrange(self.genotype.num_of_columns)
+        rand_y = randrange(self.genotype.num_of_rows)
+        rand_z = randrange(NUM_OF_LAYERS)
+
+        # TODO: check about the rand size
+        size_x, size_y = randrange(self.genotype.num_of_columns), randrange(self.genotype.num_of_rows)
+
+        left = max(0, rand_x - size_x)
+        right = min(self.genotype.num_of_columns, rand_x + size_x)
+        top = min(self.genotype.num_of_rows, rand_y + size_y)
+        bottom = max(0, rand_y - size_y)
+
+        for i in range(bottom, top):
+            for j in range(left, right):
+                curr_val = self.genotype.grid[rand_z][i][j]
+
+                # keep pins value
+                self.genotype.grid[rand_z][i][j] = 0 if curr_val >= 0 else curr_val
 
     def _mutation_1(self, retries: int):
         """
@@ -542,7 +565,19 @@ class RoutingSolution:
         return self.connect_all_pins(num_of_retries=retries, is_partially_connected=True)
 
     def mutate(self, retries: int) -> bool:
-        pass
+
+        rand_num = random.uniform(0, 1)
+
+        if 0 <= rand_num <= 0.001:
+            return self._mutation_1(retries=retries)
+        elif 0.001 < rand_num <= 0.003:
+            return self._mutation_2(retries=retries)
+        elif 0.003 < rand_num <= 0.013:
+            return self._mutation_3(retries=retries)
+        elif 0.013 < rand_num <= 0.023:
+            return self._mutation_4(retries=retries)
+        else:
+            return True
 
     def optimize(self):
         pass
