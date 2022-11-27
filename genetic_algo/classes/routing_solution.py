@@ -350,33 +350,33 @@ class RoutingSolution:
 
         return pin_a, pin_b
 
-    def _get_connected_and_not_connected_pins(self, is_partially_connected: bool) -> (List[Pin], List[Pin]):
-        """
-        Check if we have:
-            - for pin in row 0: cell with the same net num in the layer above or row above.
-            - for pin in row max_row: cell with the same net num in the layer above or row beneath.
-        If one of those cases is True the pin is connected.
-        :param is_partially_connected: if False return all pins as not_connected, else check.
-        :return: connected and not connected pins lists.
-        """
-        connected = []
-        not_connected = self._get_all_pins()
-
-        # TODO - fix BUG should be "if not is_partially_connected"
-        if is_partially_connected:
-            return connected, not_connected
-
-        new_not_connected = []
-        for pin in not_connected:
-            y_addition = 1 if pin.y == 0 else -1
-            if abs(self.genotype.grid[pin.z][pin.y + y_addition][pin.x]) == abs(pin.value):
-                connected.append(pin)
-            elif abs(self.genotype.grid[pin.z + 1][pin.y][pin.x]) == abs(pin.value):
-                connected.append(pin)
-            else:
-                new_not_connected.append(pin)
-
-        return connected, new_not_connected
+    # def _get_connected_and_not_connected_pins(self, is_partially_connected: bool) -> (List[Pin], List[Pin]):
+    #     """
+    #     Check if we have:
+    #         - for pin in row 0: cell with the same net num in the layer above or row above.
+    #         - for pin in row max_row: cell with the same net num in the layer above or row beneath.
+    #     If one of those cases is True the pin is connected.
+    #     :param is_partially_connected: if False return all pins as not_connected, else check.
+    #     :return: connected and not connected pins lists.
+    #     """
+    #     connected = []
+    #     not_connected = self._get_all_pins()
+    #
+    #     # TODO - fix BUG should be "if not is_partially_connected"
+    #     if not is_partially_connected:
+    #         return connected, not_connected
+    #
+    #     new_not_connected = []
+    #     for pin in not_connected:
+    #         y_addition = 1 if pin.y == 0 else -1
+    #         if abs(self.genotype.grid[pin.z][pin.y + y_addition][pin.x]) == abs(pin.value):
+    #             connected.append(pin)
+    #         elif abs(self.genotype.grid[pin.z + 1][pin.y][pin.x]) == abs(pin.value):
+    #             connected.append(pin)
+    #         else:
+    #             new_not_connected.append(pin)
+    #
+    #     return connected, new_not_connected
 
     def connect_all_pins(self,
                          num_of_retries: Optional[int] = None,
@@ -391,8 +391,7 @@ class RoutingSolution:
         """
         num_of_random_routing_retries = num_of_retries or NUM_OF_RANDOM_ROUTING_RETRIES
 
-        already_connected_pins, not_connected_pins = self._get_connected_and_not_connected_pins(
-            is_partially_connected=is_partially_connected)
+        already_connected_pins, not_connected_pins = [], self._get_all_pins()
 
         existing_nets_in_connected_pins = set()
 
@@ -404,24 +403,32 @@ class RoutingSolution:
                 else not_connected_pins
             pin_b = self._get_pin_to_connect(pool=pool_for_pin_b, net_num=net_num)
 
-            random_routing_success = False
-            for i in range(num_of_random_routing_retries):
-                if self.random_routing(pin_a=pin_a, pin_b=pin_b):
-                    random_routing_success = True
-                    break
-                else:
-                    self.extend_genotype_num_of_rows_by_one()
-                    pin_a, pin_b = self.fix_all_pins_row_index(
-                        pin_a=pin_a, pin_b=pin_b,
-                        not_connected_pins=not_connected_pins,
-                        already_connected_pins=already_connected_pins)
+            path = self.genotype.find_shortest_path(point1=Point3D(x=pin_a.x, y=pin_a.y, z=pin_a.z),
+                                                    point2=Point3D(x=pin_b.x, y=pin_b.y, z=pin_b.z))
+            if path:
+                # already have path for those pins
+                already_connected_pins.append(pin_a)
+                already_connected_pins.append(pin_b)
+                existing_nets_in_connected_pins.add(net_num)
+            else:
+                random_routing_success = False
+                for i in range(num_of_random_routing_retries):
+                    if self.random_routing(pin_a=pin_a, pin_b=pin_b):
+                        random_routing_success = True
+                        break
+                    else:
+                        self.extend_genotype_num_of_rows_by_one()
+                        pin_a, pin_b = self.fix_all_pins_row_index(
+                            pin_a=pin_a, pin_b=pin_b,
+                            not_connected_pins=not_connected_pins,
+                            already_connected_pins=already_connected_pins)
 
-            if not random_routing_success:
-                return False
+                if not random_routing_success:
+                    return False
 
-            already_connected_pins.append(pin_a)
-            already_connected_pins.append(pin_b)
-            existing_nets_in_connected_pins.add(net_num)
+                already_connected_pins.append(pin_a)
+                already_connected_pins.append(pin_b)
+                existing_nets_in_connected_pins.add(net_num)
 
         return True
 
