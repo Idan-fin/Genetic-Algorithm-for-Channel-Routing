@@ -34,7 +34,7 @@ class Pin(Nucleotide):
         return hash(tuple_to_hash)
 
     def _validate(self):
-        assert self.value < 0
+        assert self.value <= 0
 
 
 class Direction(IntEnum):

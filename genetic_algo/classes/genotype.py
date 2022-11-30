@@ -55,7 +55,8 @@ class Genotype:
                         g.add_edge(self._calculate_edge_index(layer_index, row_index, column_index),
                                    (self._calculate_edge_index(layer_index, row_index, column_index+1)))
 
-                    if layer_index == 0 and abs(self.grid[1][row_index][column_index]) == abs(val) == net_id:
+                    if layer_index == 0 and 0 < row_index < len(self.grid[0])-1 \
+                            and abs(self.grid[1][row_index][column_index]) == abs(val) == net_id:
                         g.add_edge(self._calculate_edge_index(0, row_index, column_index),
                                    (self._calculate_edge_index(1, row_index, column_index)))
 
@@ -83,7 +84,8 @@ class Genotype:
         g = self.create_graph(abs(self.grid[point1.z][point1.y][point1.x]))
         temp_point1 = Point3D(point1.z, point1.y, point1.x)
         temp_point2 = Point3D(point2.z, point2.y, point2.x)
-        shortest_path = g.get_shortest_paths(self._calculate_edge_from_point(temp_point1), self._calculate_edge_from_point(temp_point2))
+        shortest_path = g.get_shortest_paths(self._calculate_edge_from_point(temp_point1),
+                                             self._calculate_edge_from_point(temp_point2))
         if len(shortest_path[0]) == 0:
             return None
         return [self.calculate_genotype_index_fixed(node) for node in shortest_path[0]]

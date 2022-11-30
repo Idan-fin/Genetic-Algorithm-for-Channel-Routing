@@ -66,6 +66,6 @@ class InputParams:
                     match_pins[pin] = 1
 
         for net_number in match_pins:
-            if match_pins[net_number] == 1:
+            if match_pins[net_number] == 1 and net_number != 0:
                 raise ValueError("net number:" + str(net_number) + " has only 1 pin")
 
