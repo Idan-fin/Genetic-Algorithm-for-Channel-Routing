@@ -64,6 +64,8 @@ class Population:
                          individual_i: RoutingSolution, individual_j: RoutingSolution, f_p_i, f_p_j, f_2_p_i, f_2_p_j):
         delta_f = f_p_j - f_p_i
         delta_f_2 = f_2_p_i - f_2_p_j
+        if delta_f_2 == 0:
+            return f_p_j
         return f_p_j - (delta_f * (f_2_p_j - individual_x.calc_fitness_func2())) / delta_f_2
 
     def _add_fitness_group_to_dictionary(self, dictionary_by_fitness, individual_list, p_j_plus_1_fitness):
