@@ -17,8 +17,9 @@ class OutputResolver:
         self.output_path = output_path
 
     def resolve_output(self):
-        f = open(self.output_path, "w")
-        json_type = json.dumps(self.output.best_solution)
-        f.write(json_type)
-        f.close()
-
+        outfile = open(self.output_path, "w")
+        output = dict()
+        output["input_params"] = self.output.best_solution.input_params.__dict__
+        output["solution"] = self.output.best_solution.genotype.__dict__
+        json.dump(output, outfile, indent=2)
+        outfile.close()

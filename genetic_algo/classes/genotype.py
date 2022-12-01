@@ -48,17 +48,17 @@ class Genotype:
             for row_index, row in enumerate(layer):
                 for column_index, val in enumerate(row):
                     if row_index <= len(self.grid[0]) - 2 and \
-                            abs(self.grid[layer_index][row_index + 1][column_index]) == abs(val) == net_id:
+                            abs(val) == net_id and net_id == abs(layer[row_index + 1][column_index]):
                         eslist.append((self._calculate_edge_index(layer_index, row_index, column_index),
                                        (self._calculate_edge_index(layer_index, row_index + 1, column_index))))
                     if column_index <= len(row) - 2 and len(self.grid[0]) - 1 > row_index > 0 and \
-                            abs(self.grid[layer_index][row_index][column_index + 1]) == abs(val) == net_id:
+                            abs(val) == net_id and net_id == abs(row[column_index + 1]):
                         eslist.append((self._calculate_edge_index(layer_index, row_index, column_index),
                                        (self._calculate_edge_index(layer_index, row_index, column_index + 1))))
                     if layer_index == 0 and 0 < row_index < len(self.grid[0]) - 1 \
-                            and abs(self.grid[1][row_index][column_index]) == abs(val) == net_id:
+                            and abs(val) == net_id and net_id == abs(self.grid[1][row_index][column_index]):
                         eslist.append((self._calculate_edge_index(0, row_index, column_index),
-                                   (self._calculate_edge_index(1, row_index, column_index))))
+                                       (self._calculate_edge_index(1, row_index, column_index))))
         g.add_edges(eslist)
         return g
 
