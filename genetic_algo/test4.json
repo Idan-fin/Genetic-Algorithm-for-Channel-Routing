@@ -18,7 +18,8 @@
                             },
                             "expected_final_row_num": 4,
                             "pins_position": [[1,6,1,8,2,7,3,5,5,4,7], [2,5,4,7,5,4,1,4,3,8,6]],
-                            "preferred_direction_layer": [0, 1, 1, 1]
+                            "preferred_direction_layer": [0, 1, 1, 1],
+                            "num_of_optimization_rounds": 5
                         }
                     ]
                 }

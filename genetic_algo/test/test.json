@@ -16,7 +16,8 @@
                         "mut_4_prob": 0.004
                     },
                     "expected_final_row_num": 20,
-                    "pins_position": [[1, 2, 3], [3, 2, 1]]
+                    "pins_position": [[1, 2, 3], [3, 2, 1]],
+                    "num_of_optimization_rounds": 5
                 }
             ]
         }
