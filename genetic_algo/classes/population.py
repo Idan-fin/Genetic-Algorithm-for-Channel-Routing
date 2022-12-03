@@ -27,7 +27,7 @@ class Population:
         initial_population = []
 
         for i in range(self.input_params.population_size):
-
+            print("sol: " + str(i) + "\n")
             solution_created_successfully = False
             while not solution_created_successfully:
                 next_solution = RoutingSolution(input_params=self.input_params)
