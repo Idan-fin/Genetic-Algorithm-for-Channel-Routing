@@ -5,7 +5,7 @@ from random import seed
 
 
 def main():
-    seed(13)
+    # seed(13)
     print("start")
     input_params = InputParams('test4.json')
     genetic_algo = GeneticAlgorithm(input_params=input_params)
