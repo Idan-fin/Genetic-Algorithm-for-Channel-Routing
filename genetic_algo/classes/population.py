@@ -301,7 +301,7 @@ class Population:
 
             while len(all_mutation_numbers):
                 mutation_num = all_mutation_numbers.pop(randrange(0, len(all_mutation_numbers)))
-                new_sol = self._perform_single_mutation(sol=sol, mutation_num=mutation_num)
+                new_sol = self._perform_single_mutation(sol=new_sol, mutation_num=mutation_num)
 
             population_after_mutation.append(new_sol)
 
@@ -312,7 +312,6 @@ class Population:
     def _add_solution_and_update_best(self, sol: RoutingSolution):
         self.routing_solutions.append(sol)
         self.dictionary_by_fitness = self._create_fitness_dictionary()
-        self.reduction()
         self.best_solution = self.get_best()
 
     def optimize_best_solution(self):
