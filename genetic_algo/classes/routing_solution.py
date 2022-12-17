@@ -201,7 +201,7 @@ class RoutingSolution:
             genotype.grid[layer][starting_point.y][starting_point.x] = net_number
 
         # draw line from starting point down
-        while bottom_y >= 0:
+        while bottom_y > 0:
             current_node_val = genotype.grid[layer][bottom_y][starting_point.x]
 
             # see example for this condition in the article section 4.3, image (a).
@@ -213,7 +213,7 @@ class RoutingSolution:
         bottom_y += 1
 
         # draw line from starting point up
-        while top_y < genotype.num_of_rows:
+        while top_y < genotype.num_of_rows - 1:
             current_node_val = genotype.grid[layer][top_y][starting_point.x]
 
             # see example for this condition in the article section 4.3, image (a).
