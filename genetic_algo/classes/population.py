@@ -1,12 +1,14 @@
-from typing import List
-import collections
+from typing import List, Optional
+
 from random import randrange
 from copy import deepcopy
 from genetic_algo.classes.input_params import InputParams
 from genetic_algo.classes.routing_solution import RoutingSolution
-from genetic_algo.classes.genotype import Genotype
+
 import random
 from collections import OrderedDict
+
+NUM_OF_RETRIES = 30  # article param
 
 
 class Population:
@@ -201,8 +203,7 @@ class Population:
         while not is_connected:
             new_sol = self._create_initial_descendant(parents=parents)
             num_of_connect_all_pin_retries = new_sol.genotype.num_of_rows  # see section 4.6
-            is_connected = new_sol.connect_all_pins(num_of_retries=num_of_connect_all_pin_retries,
-                                                    is_partially_connected=True)
+            is_connected = new_sol.connect_all_pins(num_of_retries=num_of_connect_all_pin_retries)
 
         return new_sol
 
@@ -259,23 +260,74 @@ class Population:
 
         pass
 
+    def _perform_single_mutation(self,
+                                 sol: RoutingSolution,
+                                 mutation_num: int,
+                                 enforce_mutation: bool = False) -> RoutingSolution:
+        """
+        Perform mutation according to the given mutation number.
+        Return mutate solution if mutation succeeded else original given solution.
+        """
+        original_sol = deepcopy(sol)
+        rand_num = random.uniform(0, 1)
+        successes = False
+
+        if mutation_num == 1:
+            if rand_num <= self.input_params.mut_1_prob or enforce_mutation:
+                successes = sol.mutation_1(retries=NUM_OF_RETRIES)
+        elif mutation_num == 2:
+            if rand_num <= self.input_params.mut_2_prob or enforce_mutation:
+                successes = sol.mutation_2(retries=NUM_OF_RETRIES)
+        elif mutation_num == 3:
+            if rand_num <= self.input_params.mut_3_prob or enforce_mutation:
+                successes = sol.mutation_3(retries=NUM_OF_RETRIES)
+        elif mutation_num == 4:
+            if rand_num <= self.input_params.mut_4_prob or enforce_mutation:
+                successes = sol.mutation_4(retries=NUM_OF_RETRIES)
+
+        return sol if successes else original_sol
+
     def mutate_all_solutions_and_calc_new_fitness(self):
         """
-        Activate mutate() for every routing solution.
-        mutate(), will perform 1 of 4 mutation or not at all,
-        according to the odds specified in the article.
+        For each solution perform mutations on random order.
         Finally, calc new fitness.
         """
-        num_of_retries = 30  # article param
 
         population_after_mutation = []
 
         for sol in self.routing_solutions:
-            old_sol = deepcopy(sol)
-            success = sol.mutate(retries=num_of_retries)
+            new_sol = sol
+            all_mutation_numbers = [1, 2, 3, 4]
 
-            population_after_mutation.append(sol if success else old_sol)
+            while len(all_mutation_numbers):
+                mutation_num = all_mutation_numbers.pop(randrange(0, len(all_mutation_numbers)))
+                new_sol = self._perform_single_mutation(sol=new_sol, mutation_num=mutation_num)
+
+            population_after_mutation.append(new_sol)
 
         self.routing_solutions = population_after_mutation
 
         self.dictionary_by_fitness = self._create_fitness_dictionary()
+
+    def _add_solution_and_update_best(self, sol: RoutingSolution):
+        self.routing_solutions.append(sol)
+        self.dictionary_by_fitness = self._create_fitness_dictionary()
+        self.best_solution = self.get_best()
+
+    def optimize_best_solution(self):
+        """
+        Perform num_of_optimization_rounds according to input params.
+        For each round, perform all 4 optimizations (enforce mutation) and update the p_best after each mutation.
+        """
+        for i in range(self.input_params.num_of_optimization_rounds):
+            new_sol = self._perform_single_mutation(sol=self.best_solution, mutation_num=1, enforce_mutation=True)
+            self._add_solution_and_update_best(sol=new_sol)
+
+            new_sol = self._perform_single_mutation(sol=self.best_solution, mutation_num=2, enforce_mutation=True)
+            self._add_solution_and_update_best(sol=new_sol)
+
+            new_sol = self._perform_single_mutation(sol=self.best_solution, mutation_num=3, enforce_mutation=True)
+            self._add_solution_and_update_best(sol=new_sol)
+
+            new_sol = self._perform_single_mutation(sol=self.best_solution, mutation_num=4, enforce_mutation=True)
+            self._add_solution_and_update_best(sol=new_sol)

@@ -1,0 +1,132 @@
+{
+  "input_params": {
+    "input_file_path": "test4.json",
+    "population_size": 50,
+    "net_length_factor": 1.001,
+    "via_numbers_factor": 2.0,
+    "max_descendants": 30,
+    "max_generations": 150,
+    "mut_1_prob": 0.001,
+    "mut_2_prob": 0.002,
+    "mut_3_prob": 0.01,
+    "mut_4_prob": 0.01,
+    "expected_final_row_num": 3,
+    "preferred_direction_layer": [
+      0,
+      1,
+      1,
+      1
+    ],
+    "pins_position": [
+      [
+        1,
+        2,
+        3,
+        3
+      ],
+      [
+        3,
+        3,
+        2,
+        1
+      ]
+    ],
+    "num_of_optimization_rounds": 5
+  },
+  "solution": {
+    "num_of_rows": 6,
+    "num_of_columns": 4,
+    "pins_position": [
+      [
+        1,
+        2,
+        3,
+        3
+      ],
+      [
+        3,
+        3,
+        2,
+        1
+      ]
+    ],
+    "grid": [
+      [
+        [
+          -1,
+          -2,
+          -3,
+          -3
+        ],
+        [
+          1,
+          2,
+          3,
+          3
+        ],
+        [
+          1,
+          2,
+          3,
+          3
+        ],
+        [
+          3,
+          3,
+          3,
+          1
+        ],
+        [
+          3,
+          3,
+          2,
+          1
+        ],
+        [
+          -3,
+          -3,
+          -2,
+          -1
+        ]
+      ],
+      [
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          0,
+          2,
+          3,
+          1
+        ],
+        [
+          0,
+          2,
+          3,
+          1
+        ],
+        [
+          0,
+          2,
+          2,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
+    ]
+  }
+}

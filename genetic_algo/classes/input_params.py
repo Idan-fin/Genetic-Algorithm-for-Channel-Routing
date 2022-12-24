@@ -20,6 +20,7 @@ class InputParams:
         self.mut_4_prob: float
         self.expected_final_row_num: int
         self.preferred_direction_layer: list[Direction]
+        self.num_of_optimization_rounds: int
 
         self._parse_input_file()
 
@@ -39,6 +40,7 @@ class InputParams:
         self.expected_final_row_num = details["expected_final_row_num"]
         self.preferred_direction_layer = details["preferred_direction_layer"]
         self.pins_position = details["pins_position"]
+        self.num_of_optimization_rounds = details["num_of_optimization_rounds"]
         f.close()
         self._check_probability_boundary(details["mut_prob"])
 

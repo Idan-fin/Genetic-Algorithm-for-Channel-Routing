@@ -201,7 +201,7 @@ class RoutingSolution:
             genotype.grid[layer][starting_point.y][starting_point.x] = net_number
 
         # draw line from starting point down
-        while bottom_y >= 0:
+        while bottom_y > 0:
             current_node_val = genotype.grid[layer][bottom_y][starting_point.x]
 
             # see example for this condition in the article section 4.3, image (a).
@@ -213,7 +213,7 @@ class RoutingSolution:
         bottom_y += 1
 
         # draw line from starting point up
-        while top_y < genotype.num_of_rows:
+        while top_y < genotype.num_of_rows - 1:
             current_node_val = genotype.grid[layer][top_y][starting_point.x]
 
             # see example for this condition in the article section 4.3, image (a).
@@ -350,37 +350,7 @@ class RoutingSolution:
 
         return pin_a, pin_b
 
-    # def _get_connected_and_not_connected_pins(self, is_partially_connected: bool) -> (List[Pin], List[Pin]):
-    #     """
-    #     Check if we have:
-    #         - for pin in row 0: cell with the same net num in the layer above or row above.
-    #         - for pin in row max_row: cell with the same net num in the layer above or row beneath.
-    #     If one of those cases is True the pin is connected.
-    #     :param is_partially_connected: if False return all pins as not_connected, else check.
-    #     :return: connected and not connected pins lists.
-    #     """
-    #     connected = []
-    #     not_connected = self._get_all_pins()
-    #
-    #     # TODO - fix BUG should be "if not is_partially_connected"
-    #     if not is_partially_connected:
-    #         return connected, not_connected
-    #
-    #     new_not_connected = []
-    #     for pin in not_connected:
-    #         y_addition = 1 if pin.y == 0 else -1
-    #         if abs(self.genotype.grid[pin.z][pin.y + y_addition][pin.x]) == abs(pin.value):
-    #             connected.append(pin)
-    #         elif abs(self.genotype.grid[pin.z + 1][pin.y][pin.x]) == abs(pin.value):
-    #             connected.append(pin)
-    #         else:
-    #             new_not_connected.append(pin)
-    #
-    #     return connected, new_not_connected
-
-    def connect_all_pins(self,
-                         num_of_retries: Optional[int] = None,
-                         is_partially_connected: bool = False) -> bool:
+    def connect_all_pins(self, num_of_retries: Optional[int] = None) -> bool:
         """
         This function will activate the random routing on every pin until all pins are connected.
         - It will choose randomly 2 pins to connect on every iteration.
@@ -528,15 +498,15 @@ class RoutingSolution:
                 # keep pins value
                 self.genotype.grid[rand_z][i][j] = 0 if curr_val >= 0 else curr_val
 
-    def _mutation_1(self, retries: int):
+    def mutation_1(self, retries: int):
         """
         mutation 1 will remove and reconnect routs from random rectangle.
         """
         self._remove_random_rectangle()
 
-        return self.connect_all_pins(num_of_retries=retries, is_partially_connected=True)
+        return self.connect_all_pins(num_of_retries=retries)
 
-    def _mutation_2(self, retries: int):
+    def mutation_2(self, retries: int):
         """
         mutation 2 will delete and reroute nets randomly.
         """
@@ -548,9 +518,9 @@ class RoutingSolution:
             net_num = all_nets.pop()
             self._remove_entire_net(net_num=net_num)
 
-        return self.connect_all_pins(num_of_retries=retries, is_partially_connected=True)
+        return self.connect_all_pins(num_of_retries=retries)
 
-    def _mutation_3(self, retries: int):
+    def mutation_3(self, retries: int):
         """
         mutation 3 will add row in a random index.
         """
@@ -558,7 +528,7 @@ class RoutingSolution:
 
         return True
 
-    def _mutation_4(self, retries: int):
+    def mutation_4(self, retries: int):
         """
         mutation 4 will remove row in a random index.
         """
@@ -569,22 +539,4 @@ class RoutingSolution:
         self.genotype.grid[1].pop(row_num)
         self.genotype.num_of_rows -= 1
 
-        return self.connect_all_pins(num_of_retries=retries, is_partially_connected=True)
-
-    def mutate(self, retries: int) -> bool:
-
-        rand_num = random.uniform(0, 1)
-
-        if 0 <= rand_num <= 0.001:
-            return self._mutation_1(retries=retries)
-        elif 0.001 < rand_num <= 0.003:
-            return self._mutation_2(retries=retries)
-        elif 0.003 < rand_num <= 0.013:
-            return self._mutation_3(retries=retries)
-        elif 0.013 < rand_num <= 0.023:
-            return self._mutation_4(retries=retries)
-        else:
-            return True
-
-    def optimize(self):
-        pass
+        return self.connect_all_pins(num_of_retries=retries)
